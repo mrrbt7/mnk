@@ -47,7 +47,7 @@ const {useState,useEffect,useRef,useCallback,useMemo,createContext,useContext}=R
 const ThemeCtx=createContext({bg:"#000",navBg:"#000",cardBg:"#1c1c1e",col:"#111",border:"#2a2a2a",text:"#e8e8e8",muted:"#555",inp:"#1a1a1a",lm:false});
 const useTheme=()=>useContext(ThemeCtx);
 const SURL='https://ahbeusidnnciqyofxolh.supabase.co';
-const SKEY='sb_publishable_dPlcXkYmpunwB72T3-tEZQ_yIgwcVjO';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFoYmV1c2lkbm5jaXF5b2Z4b2xoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDM0NzEsImV4cCI6MjA4Nzg3OTQ3MX0.pgCkpwqikpKa9Zjhji_PpvK9MyrMZ8Hr0pWH7JHPVeY';
 const db=supabase.createClient(SURL,SKEY);
 const LIME="#CAFF4C",BORDER="#2a2a2a",TEXT="#e8e8e8",MUTED="#555",CARD_BG="#1c1c1e",COL_BG="#111",BLUE="#1d9bf0";
 const COLS=[{id:"inprogress",label:"IN PROGRESS",accent:"#0A84FF"},{id:"nextup",label:"NEXT UP",accent:"#5E5CE6"},{id:"do",label:"TO DO",accent:LIME},{id:"list",label:"LIST",accent:"#888"}];
@@ -232,7 +232,20 @@ function BoardsScreen({user,onSelect,onSignOut}){
   };
   useEffect(()=>{load();},[]);
 
-  const create=async()=>{if(!newName.trim())return;setSaving(true);const{data}=await db.rpc("create_board",{p_name:newName.trim(),p_emoji:newEmoji});setSaving(false);if(data){setCreating(false);setNewName("");setNewEmoji("🏡");load();}};
+  const create=async()=>{
+    if(!newName.trim())return;
+    setSaving(true);
+    const{data,error}=await db.from("boards").insert({user_id:user.id,name:newName.trim(),emoji:newEmoji}).select().single();
+    if(!error&&data){
+      // Ensure user is owner in board_members (trigger may handle this, belt+suspenders)
+      await db.from("board_members").upsert({board_id:data.id,user_id:user.id,role:"owner"},{onConflict:"board_id,user_id"});
+      setCreating(false);setNewName("");setNewEmoji("🏡");load();
+    } else {
+      console.error("create board error",error);
+      alert("Could not create board: "+(error?.message||"unknown error"));
+    }
+    setSaving(false);
+  };
 
   const startEdit=b=>{setEditingId(b.id);setEditName(b.name);setEditEmoji(b.emoji);};
   const saveEdit=async id=>{
@@ -3915,14 +3928,18 @@ function Root(){
       setBoard(boards[0]); // always the first/oldest = Master Board
       setScreen("app");
     } else {
-      // No boards yet — auto-create Master Board
-      const{data}=await db.rpc("create_board",{p_name:"Master Board",p_emoji:"🏠"});
-      if(data?.id){
-        const{data:nb}=await db.from("boards").select("*").eq("id",data.id).single();
-        if(nb){setBoard(nb);setAllBoards([nb]);setScreen("app");return;}
+      // No boards yet — auto-create Master Board via direct insert (no RPC needed)
+      const{data:nb,error}=await db.from("boards")
+        .insert({user_id:u.id,name:"Master Board",emoji:"🏠"})
+        .select().single();
+      if(!error&&nb){
+        // Belt+suspenders: ensure owner membership in case trigger didn't fire
+        await db.from("board_members").upsert({board_id:nb.id,user_id:u.id,role:"owner"},{onConflict:"board_id,user_id"});
+        setBoard(nb);setAllBoards([{...nb,role:"owner"}]);setScreen("app");
+      } else {
+        console.error("auto-create master board failed",error);
+        setScreen("boards"); // fallback: let user create manually
       }
-      // fallback to boards screen if rpc failed
-      setScreen("boards");
     }
   };
 
