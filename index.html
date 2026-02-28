@@ -3378,7 +3378,7 @@ function QuickAddModal({boardId,buckets,onAdd,onClose}){
   );
 }
 
-function Sidebar({viewMode,onView,onClose,onBack,onSettings,onDisplay,onStats,onBuckets,onActions,onBrands,onPersons,onLabels,onImport,board}){
+function Sidebar({viewMode,onView,onClose,onBack,onBoards,onSettings,onDisplay,onStats,onBuckets,onActions,onBrands,onPersons,onLabels,onImport,board}){
   const VIEWS=[{id:"dash",icon:"◈",label:"Dashboard"},{id:"onesies",icon:"①",label:"Onesies"},{id:"inbox",icon:"⊟",label:"Inbox"},{id:"cal",icon:"▦",label:"Calendar"},{id:"day",icon:"⏱",label:"Timeline"},{id:"board",icon:"⊞",label:"Board"},{id:"list",icon:"☰",label:"List"},{id:"monthly",icon:"◷",label:"Monthly+"},{id:"health",icon:"⬡",label:"Health"},{id:"ref",icon:"⊟",label:"Reference"},{id:"taba",icon:"◉",label:"Tabata"}];
   const row=(icon,label,onClick,active)=>(
     <button onClick={onClick} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"11px 18px",border:"none",background:active?"#161616":"transparent",color:active?TEXT:MUTED,fontFamily:"inherit",fontSize:13,fontWeight:active?700:400,cursor:"pointer",textAlign:"left",borderRadius:0,transition:"background .1s"}}
@@ -3415,14 +3415,14 @@ function Sidebar({viewMode,onView,onClose,onBack,onSettings,onDisplay,onStats,on
           {row("◎","Stats",()=>{onStats();onClose();})}
           {row("⚙","Settings",()=>{onSettings();onClose();})}
           {divider()}
-          {row("‹","Back to Boards",()=>{onBack();onClose();})}
+          {row("⊞","All Boards",()=>{onBoards?onBoards():onBack();onClose();})}
         </div>
       </div>
     </>
   );
 }
 
-function MainApp({user,board,onBack,onSignOut}){
+function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
   const [tasks,setTasks]=useState([]),[buckets,setBuckets]=useState([]),[settings,setSettings]=useState(DEF_SETTINGS);
   const [actions,setActions]=useState(DEFAULT_ACTIONS),[activeAction,setActiveAction]=useState("all"),[showActions,setShowActions]=useState(false);
   const [brands,setBrands]=useState([]),[showBrands,setShowBrands]=useState(false);
@@ -3789,7 +3789,7 @@ function MainApp({user,board,onBack,onSignOut}){
             <button onClick={()=>setShowSidebar(true)} style={{background:"none",border:"none",cursor:"pointer",color:MUTED,fontSize:18,padding:"0 6px",lineHeight:1,display:"flex",alignItems:"center"}} onMouseEnter={e=>e.currentTarget.style.color=TEXT} onMouseLeave={e=>e.currentTarget.style.color=MUTED}>☰</button>
             <Logo size={22}/>
             <div>
-              <div onClick={()=>setViewMode("dash")} style={{fontWeight:800,fontSize:13,letterSpacing:-.5,display:"flex",alignItems:"center",gap:5,cursor:"pointer"}} onMouseEnter={e=>e.currentTarget.style.opacity=.75} onMouseLeave={e=>e.currentTarget.style.opacity=1} title="Dashboard"><span style={{fontSize:15}}>{board.emoji}</span>{board.name}</div>
+              <div style={{display:"flex",alignItems:"center",gap:6}}><div onClick={()=>setViewMode("dash")} style={{fontWeight:800,fontSize:13,letterSpacing:-.5,display:"flex",alignItems:"center",gap:5,cursor:"pointer"}} onMouseEnter={e=>e.currentTarget.style.opacity=.75} onMouseLeave={e=>e.currentTarget.style.opacity=1} title="Dashboard"><span style={{fontSize:15}}>{board.emoji}</span>{board.name}</div>{allBoards&&allBoards.length>1&&<div style={{display:"flex",gap:3}}>{allBoards.map(b=><div key={b.id} onClick={()=>onSwitchBoard&&onSwitchBoard(b)} title={b.name} style={{width:6,height:6,borderRadius:"50%",background:b.id===board.id?LIME:"#333",cursor:"pointer",flexShrink:0,transition:"background .15s"}} onMouseEnter={e=>e.currentTarget.style.background=b.id===board.id?LIME:"#666"} onMouseLeave={e=>e.currentTarget.style.background=b.id===board.id?LIME:"#333"}/>)}</div>}</div>
               {syncing&&<div style={{fontSize:8,color:"#30D158",letterSpacing:1,textTransform:"uppercase"}}>SYNCING…</div>}
             </div>
           </div>
@@ -3859,7 +3859,7 @@ function MainApp({user,board,onBack,onSignOut}){
         </div>
       </div>
 
-      {showSidebar&&<Sidebar viewMode={viewMode} onView={setViewMode} onClose={()=>setShowSidebar(false)} onBack={onBack} onSettings={()=>setShowSettings(true)} onDisplay={()=>setShowDisplay(true)} onStats={()=>setShowStats(true)} onBuckets={()=>setShowBuckets(true)} onActions={()=>setShowActions(true)} onBrands={()=>setShowBrands(true)} onPersons={()=>setShowPersons(true)} onLabels={()=>setShowLabels(true)} onImport={()=>setShowImport(true)} board={board}/>}
+      {showSidebar&&<Sidebar viewMode={viewMode} onView={setViewMode} onClose={()=>setShowSidebar(false)} onBack={onBack} onBoards={()=>{setShowSidebar(false);onBack();}}  onSettings={()=>setShowSettings(true)} onDisplay={()=>setShowDisplay(true)} onStats={()=>setShowStats(true)} onBuckets={()=>setShowBuckets(true)} onActions={()=>setShowActions(true)} onBrands={()=>setShowBrands(true)} onPersons={()=>setShowPersons(true)} onLabels={()=>setShowLabels(true)} onImport={()=>setShowImport(true)} board={board}/>}
       {showQuickAdd&&(
         <QuickAddModal
           boardId={board.id}
@@ -3900,22 +3900,39 @@ function MainApp({user,board,onBack,onSignOut}){
 
 function Root(){
   const [screen,setScreen]=useState("loading"),[user,setUser]=useState(null),[board,setBoard]=useState(null);
+  const [allBoards,setAllBoards]=useState([]);
 
-  const tryAutoOpen=async(u)=>{
-    const defId=getDefaultId(u.id);
-    if(!defId){setScreen("boards");return;}
-    const{data}=await db.from("boards").select("*").eq("id",defId).single();
-    if(data){setBoard(data);setScreen("app");}
-    else{setScreen("boards");}
+  // Always auto-open the Master Board (oldest board).
+  // If user has no boards, create "Master Board" automatically.
+  const openMaster=async(u)=>{
+    const{data:members}=await db.from("board_members")
+      .select("role,boards(*)")
+      .eq("user_id",u.id)
+      .order("created_at",{referencedTable:"boards",ascending:true});
+    const boards=(members||[]).map(m=>({...m.boards,role:m.role})).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+    setAllBoards(boards);
+    if(boards.length>0){
+      setBoard(boards[0]); // always the first/oldest = Master Board
+      setScreen("app");
+    } else {
+      // No boards yet — auto-create Master Board
+      const{data}=await db.rpc("create_board",{p_name:"Master Board",p_emoji:"🏠"});
+      if(data?.id){
+        const{data:nb}=await db.from("boards").select("*").eq("id",data.id).single();
+        if(nb){setBoard(nb);setAllBoards([nb]);setScreen("app");return;}
+      }
+      // fallback to boards screen if rpc failed
+      setScreen("boards");
+    }
   };
 
   useEffect(()=>{
     db.auth.getSession().then(({data:{session}})=>{
-      if(session){setUser(session.user);tryAutoOpen(session.user);}
+      if(session){setUser(session.user);openMaster(session.user);}
       else setScreen("auth");
     });
     const {data:{subscription}}=db.auth.onAuthStateChange((_,session)=>{
-      if(session){setUser(session.user);setScreen(s=>s==="loading"?"boards":s);}
+      if(session){setUser(session.user);setScreen(s=>s==="loading"?"loading":s);}
       else{setUser(null);setBoard(null);setScreen("auth");}
     });
     return()=>subscription.unsubscribe();
@@ -3923,9 +3940,9 @@ function Root(){
 
   const signOut=()=>db.auth.signOut();
   if(screen==="loading")return(<div style={{height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"#000",flexDirection:"column",gap:12}}><Logo size={40}/><div className="spin" style={{width:20,height:20,border:`2px solid ${BORDER}`,borderTopColor:LIME,borderRadius:"50%"}}/></div>);
-  if(screen==="auth")return<AuthScreen onAuth={u=>{setUser(u);tryAutoOpen(u);}}/>;
+  if(screen==="auth")return<AuthScreen onAuth={u=>{setUser(u);openMaster(u);}}/>;
   if(screen==="boards")return<BoardsScreen user={user} onSelect={b=>{setBoard(b);setScreen("app");}} onSignOut={signOut}/>;
-  if(screen==="app")return<MainApp user={user} board={board} onBack={()=>setScreen("boards")} onSignOut={signOut}/>;
+  if(screen==="app")return<MainApp user={user} board={board} allBoards={allBoards} onSwitchBoard={b=>{setBoard(b);setScreen("app");}} onBack={()=>setScreen("boards")} onSignOut={signOut}/>;
   return null;
 }
 
