@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="theme-color" content="#000000"/>
-<title>MnK v3.2</title>
+<title>MnK v3.3</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -128,6 +128,7 @@ const nextDue=f=>{
   return null;
 };
 const freqLabel=f=>{const p=parseFreq(f);return p.type?p.label:f||"";};
+const todOrd=()=>1; // legacy stub — timeOfDay removed
 const dueLabel=dd=>{
   if(!dd)return null;const diff=daysDiff(dd);
   if(diff<0)return{text:`${Math.abs(diff)}d overdue`,color:"#FF453A",weight:700};
@@ -1041,7 +1042,41 @@ function AdminSection(){
   );
 }
 
-function SettingsMdl({settings,onChange,onBuckets,onMembers,onActions,onBrands,onPersons,onClose,boardName,userRole,user,onCleanSort,onShowLog,onExportTasks,onExportLog,onExportBoard,onBoardSort,onSnoozeOverdue,onTabata,onSync,syncing}){
+function AdminSettingsMdl({onClose,userRole,user,onMembers,onImport,onExportTasks,onExportLog,onExportBoard,onBoardSort,onCleanSort,onSnoozeOverdue,onSync,syncing}){
+  const btn=(label,onClick,col)=>(<button onClick={onClick} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"11px 8px",borderRadius:8,border:`1px solid ${col?col+"44":BORDER}`,background:col?"#0a0a0a":CARD_BG,cursor:"pointer",color:col||TEXT,fontSize:12,fontFamily:"inherit",fontWeight:col?700:400,marginBottom:8}}>{label}</button>);
+  return(
+    <Modal onClose={onClose} maxWidth={360}>
+      <div style={{padding:"18px 18px 4px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+          <div><div style={{fontWeight:700,fontSize:15}}>🔐 Admin Settings</div><div style={{fontSize:11,color:"#FF9F0A",marginTop:2}}>Owner Only 👁</div></div>
+          <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:MUTED}}>✕</button>
+        </div>
+      </div>
+      <div style={{padding:"0 18px",maxHeight:"70vh",overflowY:"auto"}}>
+        <div style={{fontSize:9,fontWeight:700,letterSpacing:1.5,color:"#FF9F0A",textTransform:"uppercase",padding:"14px 0 8px"}}>👥 Members & Access</div>
+        {btn("👥 Manage Members",()=>{onMembers();onClose();},"#5E5CE6")}
+        {btn("📋 Activity Log",()=>{onClose();},MUTED)}
+        <div style={{fontSize:9,fontWeight:700,letterSpacing:1.5,color:MUTED,textTransform:"uppercase",padding:"14px 0 8px"}}>📤 Export / Import</div>
+        {btn("📥 Import Tasks",()=>{onImport();onClose();})}
+        {btn("📤 Export Tasks CSV",()=>{onExportTasks();onClose();})}
+        {btn("📤 Export Log CSV",()=>{onExportLog();onClose();})}
+        {btn("📦 Export Board JSON",()=>{onExportBoard();onClose();},"#5E5CE6")}
+        <div style={{fontSize:9,fontWeight:700,letterSpacing:1.5,color:MUTED,textTransform:"uppercase",padding:"14px 0 8px"}}>⚡ Board Tools</div>
+        {btn("⚡ Super Sort",()=>{onBoardSort();onClose();},"#5E5CE6")}
+        {btn("⟳ Clean Sort",()=>{onCleanSort();onClose();},"#4ECDC4")}
+        {btn("💤 Snooze All Overdue",()=>{onSnoozeOverdue();onClose();},"#FF9F0A")}
+        {btn(syncing?"↻ Syncing…":"↻ Force Sync",()=>{onSync&&onSync();},"#4ECDC4")}
+        <div style={{fontSize:9,fontWeight:700,letterSpacing:1.5,color:"#FF9F0A",textTransform:"uppercase",padding:"14px 0 8px"}}>🔧 Local Config</div>
+        <AdminSection/>
+      </div>
+      <div style={{padding:"14px 18px 18px",display:"flex",justifyContent:"flex-end",borderTop:`1px solid ${BORDER}`,marginTop:14}}>
+        <button onClick={onClose} style={{padding:"7px 18px",borderRadius:8,border:"none",background:LIME,color:"#000",cursor:"pointer",fontWeight:700,fontFamily:"inherit",fontSize:12}}>Done</button>
+      </div>
+    </Modal>
+  );
+}
+
+function SettingsMdl({settings,onChange,onBuckets,onMembers,onActions,onBrands,onPersons,onClose,boardName,userRole,user,onCleanSort,onShowLog,onExportTasks,onExportLog,onExportBoard,onBoardSort,onSnoozeOverdue,onTabata,onSync,syncing,onAdmin}){
   const {cardBg:sBg,border:sBo,text:sTx,muted:sMu,inp:sInp}=useTheme();
   const selSt={padding:"5px 8px",borderRadius:7,border:`1px solid ${sBo}`,background:sInp,color:sTx,fontSize:12,fontFamily:"inherit",cursor:"pointer",outline:"none"};
   const tog=k=>onChange({...settings,[k]:!settings[k]});
@@ -1074,25 +1109,11 @@ function SettingsMdl({settings,onChange,onBuckets,onMembers,onActions,onBrands,o
           </select>
         </div>
         <div style={{paddingTop:12,display:"flex",flexDirection:"column",gap:6}}>
-          {(()=>{
-            const btn=(label,onClick,col)=>(<button onClick={onClick} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"9px 8px",borderRadius:8,border:`1px solid ${col?col+"44":BORDER}`,background:col?"#0a0a0a":CARD_BG,cursor:"pointer",color:col||TEXT,fontSize:11,fontFamily:"inherit",fontWeight:col?700:400}}>{label}</button>);
-            return(<>
-              {/* Managers moved to Sidebar */}
-              {userRole==="owner"&&<div style={{display:"flex",gap:6,alignItems:"center"}}>{btn("👥 Members",()=>{onMembers();onClose();})}{btn("📋 Log",()=>{onShowLog();onClose();})}<span style={{fontSize:9,color:"#FF9F0A",fontWeight:700,letterSpacing:.5,marginLeft:2}}>OWNER ONLY</span></div>}
-              <div style={{display:"flex",gap:6}}>{btn("📤 Tasks",()=>onExportTasks())}{btn("📤 Log",()=>onExportLog())}</div>
-              <div style={{display:"flex",gap:6}}>{btn("📦 Export Board",()=>onExportBoard(),"#5E5CE6")}</div>
-              <div style={{display:"flex",gap:6}}>{btn("⚡ Board Sort",()=>{onBoardSort();onClose();},"#5E5CE6")}{btn("⟳ Clean Sort",()=>{onCleanSort();onClose();},"#4ECDC4")}</div>
-              <div style={{display:"flex",gap:6}}>{btn("💤 Snooze Overdue",()=>{onSnoozeOverdue();onClose();},"#FF9F0A")}</div>
-              <div style={{display:"flex",gap:6}}>{btn(syncing?"↻ Syncing…":"↻ Sync Now",()=>{onSync&&onSync();},"#4ECDC4")}</div>
-            </>);
-          })()}
+          {(userRole==="owner"||userRole==="admin"||(typeof user!=="undefined"&&user?.email===OWNER_EMAIL))&&(
+            <button onClick={()=>{onAdmin&&onAdmin();onClose();}} style={{width:"100%",padding:"11px 8px",borderRadius:8,border:"1px solid #FF9F0A44",background:"#0f0a00",cursor:"pointer",color:"#FF9F0A",fontSize:12,fontFamily:"inherit",fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>🔐 Admin Settings</button>
+          )}
+          <button onClick={()=>{onTabata&&onTabata();onClose();}} style={{width:"100%",padding:"9px 8px",borderRadius:8,border:`1px solid ${BORDER}`,background:CARD_BG,cursor:"pointer",color:TEXT,fontSize:12,fontFamily:"inherit",fontWeight:400,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>◉ Tabata Timer</button>
         </div>
-        {(userRole==="owner"||userRole==="admin"||(typeof user!=="undefined"&&user?.email===OWNER_EMAIL))&&(
-          <>
-            <div style={{fontSize:9,fontWeight:700,letterSpacing:1.5,color:"#FF9F0A",textTransform:"uppercase",padding:"14px 0 6px",marginTop:2}}>🔐 Admin — Owner Only 👁</div>
-            <AdminSection/>
-          </>
-        )}
       </div>
       <div style={{padding:"14px 18px 18px",display:"flex",justifyContent:"flex-end",borderTop:`1px solid ${BORDER}`,marginTop:14}}><button onClick={onClose} style={{padding:"7px 18px",borderRadius:8,border:"none",background:LIME,color:"#000",cursor:"pointer",fontWeight:700,fontFamily:"inherit",fontSize:12}}>Done</button></div>
     </Modal>
@@ -1155,13 +1176,26 @@ function MoreMenu({onDelete,onDuplicate}){
   );
 }
 
-function MoreSection({open,onToggle,children}){
+function MoreSection({open,onToggle,fullScreen,children}){
+  if(open&&fullScreen){
+    return(
+      <div style={{position:"fixed",inset:0,background:"#050505",zIndex:400,display:"flex",flexDirection:"column"}}>
+        <div style={{padding:"12px 16px",borderBottom:`1px solid ${BORDER}`,flexShrink:0,display:"flex",alignItems:"center",gap:8,background:"#0a0a0a"}}>
+          <button onClick={onToggle} style={{background:"none",border:"none",cursor:"pointer",color:MUTED,fontSize:20,padding:"0 6px 0 0",lineHeight:1}}>‹</button>
+          <span style={{fontSize:12,color:MUTED,fontWeight:700,letterSpacing:1,textTransform:"uppercase"}}>More Options</span>
+          <div style={{flex:1}}/>
+          <button onClick={onToggle} style={{background:"none",border:`1px solid ${BORDER}`,borderRadius:6,padding:"4px 12px",cursor:"pointer",color:MUTED,fontSize:12,fontFamily:"inherit"}}>Done</button>
+        </div>
+        <div style={{flex:1,overflowY:"auto",padding:"16px 18px 40px"}}>{children}</div>
+      </div>
+    );
+  }
   return(
     <div style={{marginBottom:14}}>
       <button onClick={onToggle} style={{display:"flex",alignItems:"center",gap:7,width:"100%",background:"none",border:`1px solid ${open?"#444":BORDER}`,borderRadius:8,padding:"9px 12px",cursor:"pointer",color:open?TEXT:MUTED,fontSize:12,fontFamily:"inherit",marginBottom:open?10:0,transition:"border-color .15s"}}>
         <span style={{fontSize:11}}>{open?"▾":"▸"}</span>
         <span style={{fontWeight:600,letterSpacing:.5}}>More Options</span>
-        <span style={{marginLeft:"auto",fontSize:10,color:"#333"}}>{open?"collapse":"priority · bucket · freq · duration · assigned · cover · attachments"}</span>
+        <span style={{marginLeft:"auto",fontSize:10,color:"#333"}}>{open?"collapse":"bucket · freq · link · priority · labels…"}</span>
       </button>
       {open&&<div style={{padding:"12px",background:"#0a0a0a",borderRadius:8,border:`1px solid ${BORDER}`}}>{children}</div>}
     </div>
@@ -1225,22 +1259,22 @@ function EditMdl({task,tasks,buckets,actions,brands,persons,labels,onSave,onClos
   return(
     <Modal onClose={onClose}>
       <div style={{padding:"16px 16px 0"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
-          <div style={{flex:1,minWidth:0,paddingRight:10}}>
-            <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:4}}>
-              {bkt&&<span>{bkt.emoji}</span>}{pi.emoji&&<span style={{fontSize:13}}>{pi.emoji}</span>}
-              <div style={{fontWeight:700,fontSize:16}}>{f.title||<span style={{color:MUTED,fontStyle:"italic"}}>Untitled</span>}</div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+          <div style={{flex:1,minWidth:0,paddingRight:8}}>
+            {!readOnly
+              ?<input value={f.title} onChange={e=>{const v=e.target.value;setF(x=>({...x,title:v,priority:v.includes("🚨")?"high":x.priority==="high"&&!v.includes("🚨")?"normal":x.priority}));}} style={{width:"100%",fontSize:18,fontWeight:800,color:TEXT,background:"transparent",border:"none",borderBottom:`1px solid ${BORDER}`,outline:"none",fontFamily:"inherit",lineHeight:1.3,marginBottom:6,padding:"0 0 4px",boxSizing:"border-box"}} placeholder="Task title…" onFocus={FL} onBlur={FB}/>
+              :<div style={{fontWeight:800,fontSize:18,color:TEXT,lineHeight:1.3,marginBottom:6,paddingBottom:4}}>{f.title||<span style={{color:MUTED,fontStyle:"italic"}}>Untitled</span>}</div>
+            }
+            <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+              {bkt&&<span style={{fontSize:11,color:bkt.mainColor||MUTED}}>{bkt.emoji} {bkt.label}</span>}
+              {pi.emoji&&<span style={{fontSize:11,color:MUTED}}>{pi.emoji} {pi.label}</span>}
+              {dl&&<span style={{fontSize:11,color:dl.color,fontWeight:dl.weight}}>{dl.text}</span>}
             </div>
-            {dl&&<div style={{fontSize:12,color:dl.color,fontWeight:dl.weight}}>{dl.text}</div>}
           </div>
           <div style={{display:"flex",gap:5,alignItems:"center",flexShrink:0}}>
             {!readOnly&&<select value={f.status} onChange={e=>set("status",e.target.value)} style={{padding:"4px 7px",borderRadius:6,border:`1px solid ${BORDER}`,background:"#1a1a1a",color:COLS.find(c=>c.id===f.status)?.accent||MUTED,fontSize:11,fontFamily:"inherit",cursor:"pointer",outline:"none",fontWeight:700}}>
               {COLS.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}
             </select>}
-            {!readOnly&&<div style={{display:"flex",flexDirection:"column",gap:2}}>
-              <button onClick={()=>{if(canU)set("manualOrder",(taskCol[idx-1].manualOrder||0)-1);}} disabled={!canU} style={{background:canU?"#2a2a2a":"#1a1a1a",border:"none",borderRadius:4,width:22,height:17,cursor:canU?"pointer":"default",color:canU?TEXT:"#2a2a2a",fontSize:9,display:"flex",alignItems:"center",justifyContent:"center"}}>▲</button>
-              <button onClick={()=>{if(canD)set("manualOrder",(taskCol[idx+1].manualOrder||0)+1);}} disabled={!canD} style={{background:canD?"#2a2a2a":"#1a1a1a",border:"none",borderRadius:4,width:22,height:17,cursor:canD?"pointer":"default",color:canD?TEXT:"#2a2a2a",fontSize:9,display:"flex",alignItems:"center",justifyContent:"center"}}>▼</button>
-            </div>}
             {!readOnly&&<MoreMenu onDelete={()=>onDelete(task.id)} onDuplicate={onDuplicate?()=>{onDuplicate(task);onClose();}:undefined}/>}
             <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:MUTED}}>✕</button>
           </div>
@@ -1278,35 +1312,13 @@ function EditMdl({task,tasks,buckets,actions,brands,persons,labels,onSave,onClos
           );
         })()}
 
-        <label style={bLbl}>Task Name</label>
-        <input value={f.title} onChange={e=>{const v=e.target.value;setF(x=>({...x,title:v,priority:v.includes("🚨")?"high":x.priority==="high"&&!v.includes("🚨")?"normal":x.priority}));}} disabled={readOnly} style={bInp} onFocus={FL} onBlur={FB}/>
-
 
         {/* Notes — click preview to expand full screen */}
         <label style={bLbl}>Notes</label>
         <TaskNotesField notes={f.notes||""} readOnly={readOnly} onChange={v=>set("notes",v)}/>
 
-        {/* Row 1: Bucket + Action */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-          <div>
-            <label style={bLbl}>Bucket</label>
-            <select value={f.bucketId||""} onChange={e=>set("bucketId",e.target.value||null)} disabled={readOnly} style={{...selS,marginBottom:0}}>
-              <option value="">None</option>
-              {[...buckets].sort((a,b)=>a.label.localeCompare(b.label)).map(b=><option key={b.id} value={b.id}>{b.emoji} {b.label}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={bLbl}>Action</label>
-            <select value={f.action||""} onChange={e=>set("action",e.target.value)} disabled={readOnly} style={{...selS,marginBottom:0}}>
-              <option value="">None</option>
-              {[...(actions||DEFAULT_ACTIONS)].sort((a,b)=>a.label.localeCompare(b.label)).map(a=><option key={a.id} value={a.label}>{a.emoji} {a.label}</option>)}
-              {f.action&&!(actions||DEFAULT_ACTIONS).find(a=>a.label===f.action)&&<option value={f.action}>{f.action}</option>}
-            </select>
-          </div>
-        </div>
-
-        {/* Row 2: Due Date + Time + Frequency */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:12}}>
+        {/* Compact: Due Date + Time */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
           <div>
             <label style={bLbl}>Due Date</label>
             <input type="date" value={f.dueDate||""} onChange={e=>set("dueDate",e.target.value)} disabled={readOnly} style={{...bInp,colorScheme:"dark",marginBottom:0,fontSize:11}}/>
@@ -1315,35 +1327,60 @@ function EditMdl({task,tasks,buckets,actions,brands,persons,labels,onSave,onClos
             <label style={bLbl}>Time</label>
             <input type="time" value={f.time||""} onChange={e=>set("time",e.target.value)} disabled={readOnly} style={{...bInp,colorScheme:"dark",marginBottom:0,fontSize:11}}/>
           </div>
-          <div>
+        </div>
+
+        {/* ── More Section ── */}
+        <MoreSection open={showMore} onToggle={()=>setShowMore(o=>!o)} fullScreen={true}>
+          {/* Bucket + Action */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+            <div>
+              <label style={bLbl}>Bucket</label>
+              <select value={f.bucketId||""} onChange={e=>set("bucketId",e.target.value||null)} disabled={readOnly} style={{...bSel,marginBottom:0}}>
+                <option value="">None</option>
+                {[...buckets].sort((a,b)=>a.label.localeCompare(b.label)).map(b=><option key={b.id} value={b.id}>{b.emoji} {b.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={bLbl}>Action</label>
+              <select value={f.action||""} onChange={e=>set("action",e.target.value)} disabled={readOnly} style={{...bSel,marginBottom:0}}>
+                <option value="">None</option>
+                {[...(actions||DEFAULT_ACTIONS)].sort((a,b)=>a.label.localeCompare(b.label)).map(a=><option key={a.id} value={a.label}>{a.emoji} {a.label}</option>)}
+                {f.action&&!(actions||DEFAULT_ACTIONS).find(a=>a.label===f.action)&&<option value={f.action}>{f.action}</option>}
+              </select>
+            </div>
+          </div>
+          {/* Frequency */}
+          <div style={{marginBottom:12}}>
             <label style={bLbl}>Frequency</label>
             <input value={f.frequency} onChange={e=>setFreq(e.target.value)} disabled={readOnly} placeholder="# or word" style={{...bInp,marginBottom:0,fontSize:11}} onFocus={FL} onBlur={FB}/>
             {fp.type&&<div style={{fontSize:9,color:"#4ECDC4",marginTop:2}}>→ {fp.label}</div>}
           </div>
-        </div>
-
-        {/* Row 3: Link + Keep side by side */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-          <div>
-            <label style={bLbl}>Link 🔗</label>
-            <div style={{display:"flex",gap:5,alignItems:"center",height:32}}>
-              {(f.link&&f.link.trim())?<a href={f.link.startsWith("http")?f.link:"https://"+f.link} target="_blank" rel="noopener" style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:7,border:"1px solid #1a5c6a",background:"#071014",color:"#4ECDC4",textDecoration:"none",fontSize:11,fontWeight:600,cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}} onMouseEnter={e=>e.currentTarget.style.background="#0d2030"} onMouseLeave={e=>e.currentTarget.style.background="#071014"}>🔗 Open</a>:null}
-              {!readOnly&&<input value={f.link||""} onChange={e=>set("link",e.target.value)} placeholder="https://…" style={{...bInp,marginBottom:0,flex:1,fontSize:11,height:32,minWidth:0}} onFocus={FL} onBlur={FB}/>}
-              {readOnly&&!(f.link&&f.link.trim())&&<span style={{fontSize:11,color:MUTED,fontStyle:"italic"}}>No link</span>}
+          {/* Link + Keep */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+            <div>
+              <label style={bLbl}>Link 🔗</label>
+              <div style={{display:"flex",gap:5,alignItems:"center",height:32}}>
+                {(f.link&&f.link.trim())?<a href={f.link.startsWith("http")?f.link:"https://"+f.link} target="_blank" rel="noopener" style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:7,border:"1px solid #1a5c6a",background:"#071014",color:"#4ECDC4",textDecoration:"none",fontSize:11,fontWeight:600,cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}} onMouseEnter={e=>e.currentTarget.style.background="#0d2030"} onMouseLeave={e=>e.currentTarget.style.background="#071014"}>🔗 Open</a>:null}
+                {!readOnly&&<input value={f.link||""} onChange={e=>set("link",e.target.value)} placeholder="https://…" style={{...bInp,marginBottom:0,flex:1,fontSize:11,height:32,minWidth:0}} onFocus={FL} onBlur={FB}/>}
+                {readOnly&&!(f.link&&f.link.trim())&&<span style={{fontSize:11,color:MUTED,fontStyle:"italic"}}>No link</span>}
+              </div>
+            </div>
+            <div>
+              <label style={bLbl}>Keep 📌</label>
+              <div style={{display:"flex",gap:5,alignItems:"center",height:32}}>
+                {(f.keepLink&&f.keepLink.trim())?<a href={f.keepLink.startsWith("http")?f.keepLink:"https://"+f.keepLink} target="_blank" rel="noopener" style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:7,border:"1px solid #1a5c6a",background:"#071014",color:"#4ECDC4",textDecoration:"none",fontSize:11,fontWeight:600,cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}} onMouseEnter={e=>e.currentTarget.style.background="#0d2030"} onMouseLeave={e=>e.currentTarget.style.background="#071014"}>📌 Open</a>:null}
+                {!readOnly&&<input value={f.keepLink||""} onChange={e=>set("keepLink",e.target.value)} placeholder="Keep URL…" style={{...bInp,marginBottom:0,flex:1,fontSize:11,height:32,minWidth:0}} onFocus={FL} onBlur={FB}/>}
+                {readOnly&&!(f.keepLink&&f.keepLink.trim())&&<span style={{fontSize:11,color:MUTED,fontStyle:"italic"}}>No link</span>}
+              </div>
             </div>
           </div>
-          <div>
-            <label style={bLbl}>Keep 📌</label>
-            <div style={{display:"flex",gap:5,alignItems:"center",height:32}}>
-              {(f.keepLink&&f.keepLink.trim())?<a href={f.keepLink.startsWith("http")?f.keepLink:"https://"+f.keepLink} target="_blank" rel="noopener" style={{display:"inline-flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:7,border:"1px solid #1a5c6a",background:"#071014",color:"#4ECDC4",textDecoration:"none",fontSize:11,fontWeight:600,cursor:"pointer",flexShrink:0,whiteSpace:"nowrap"}} onMouseEnter={e=>e.currentTarget.style.background="#0d2030"} onMouseLeave={e=>e.currentTarget.style.background="#071014"}>📌 Open</a>:null}
-              {!readOnly&&<input value={f.keepLink||""} onChange={e=>set("keepLink",e.target.value)} placeholder="Keep URL…" style={{...bInp,marginBottom:0,flex:1,fontSize:11,height:32,minWidth:0}} onFocus={FL} onBlur={FB}/>}
-              {readOnly&&!(f.keepLink&&f.keepLink.trim())&&<span style={{fontSize:11,color:MUTED,fontStyle:"italic"}}>No link</span>}
-            </div>
-          </div>
-        </div>
-
-        {/* ── More Section ── */}
-        <MoreSection open={showMore} onToggle={()=>setShowMore(o=>!o)}>
+          {/* Move arrows into More */}
+          {!readOnly&&<div style={{display:"flex",gap:5,alignItems:"center",marginBottom:14}}>
+            <span style={{fontSize:11,color:MUTED,marginRight:4}}>Reorder:</span>
+            <button onClick={()=>{if(canU)set("manualOrder",(taskCol[idx-1].manualOrder||0)-1);}} disabled={!canU} style={{background:canU?"#2a2a2a":"#1a1a1a",border:"none",borderRadius:4,width:28,height:22,cursor:canU?"pointer":"default",color:canU?TEXT:"#2a2a2a",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center"}}>▲</button>
+            <button onClick={()=>{if(canD)set("manualOrder",(taskCol[idx+1].manualOrder||0)+1);}} disabled={!canD} style={{background:canD?"#2a2a2a":"#1a1a1a",border:"none",borderRadius:4,width:28,height:22,cursor:canD?"pointer":"default",color:canD?TEXT:"#2a2a2a",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center"}}>▼</button>
+          </div>}
+          {/* Priority + Duration */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
             <div>
               <label style={bLbl}>Priority</label>
@@ -1420,9 +1457,20 @@ function EditMdl({task,tasks,buckets,actions,brands,persons,labels,onSave,onClos
             {f.notifyMins!=null&&!f.time&&<div style={{fontSize:10,color:"#FF9F0A",marginTop:5}}>⚠ Add a time to this task for notifications to work.</div>}
             {f.notifyMins!=null&&f.time&&<div style={{fontSize:10,color:"#30D158",marginTop:5}}>✓ Will notify {f.notifyMins===0?"at":""+f.notifyMins+"min before"} {fmtTime(f.time)}.</div>}
           </div>
+          <CompLog log={f.completionLog} onChange={v=>set("completionLog",v)}/>
         </MoreSection>
 
-        <CompLog log={f.completionLog} onChange={v=>set("completionLog",v)}/>
+        {/* Last completion — always visible, compact */}
+        {f.completionLog&&f.completionLog.length>0&&(()=>{
+          const last=[...f.completionLog].sort((a,b)=>b.doneAt.localeCompare(a.doneAt))[0];
+          const ago2=d=>{const v=Math.abs(daysDiff(d.split("T")[0]));return v===0?"today":v===1?"yesterday":`${v}d ago`;};
+          return<div style={{display:"flex",alignItems:"center",gap:6,padding:"6px 10px",background:"#061406",borderRadius:7,border:"1px solid #30D15833",marginBottom:10}}>
+            <span style={{color:"#30D158",fontSize:11,fontWeight:700}}>✓ Last done:</span>
+            <span style={{fontSize:11,color:"#30D158"}}>{fmtDateFull(last.doneAt.split("T")[0])}</span>
+            <span style={{fontSize:10,color:MUTED}}>({ago2(last.doneAt)})</span>
+            {f.completionLog.length>1&&<span style={{fontSize:10,color:"#2a4a2a",marginLeft:"auto"}}>{f.completionLog.length} total</span>}
+          </div>;
+        })()}
       </div>
       <div style={{padding:"12px 16px 16px",display:"flex",gap:8,justifyContent:"flex-end",borderTop:`1px solid ${BORDER}`,flexWrap:"wrap"}}>
         <button onClick={onClose} style={{padding:"8px 16px",borderRadius:8,border:`1px solid ${BORDER}`,background:CARD_BG,cursor:"pointer",color:MUTED,fontFamily:"inherit",fontSize:12}}>Cancel</button>
@@ -2677,7 +2725,7 @@ function OnesiesView({tasks,buckets,onEdit,onCheck,onDelete,celebratingIds,readO
   );
 }
 
-function DashboardView({tasks,buckets,onEdit,onCheck,celebratingIds,readOnly}){
+function DashboardView({tasks,buckets,onEdit,onCheck,celebratingIds,readOnly,dayFilter}){
   const now=etNow();
   const nm=now.getHours()*60+now.getMinutes();
   const dateLbl=now.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
@@ -2717,12 +2765,12 @@ function DashboardView({tasks,buckets,onEdit,onCheck,celebratingIds,readOnly}){
 
   const DashCard=({t,color})=>{
     const bkt=buckets.find(b=>b.id===t.bucketId);
-    const isDone=t.done||celebratingIds.has(t.id);
+    const isCelebrating=celebratingIds.has(t.id);
+    const isDone=t.done||isCelebrating;
     const isIP=t.status==="inprogress"&&!(t.frequency&&t.frequency.trim());
-    // Fade out a second after celebrating
     const [visible,setVisible]=useState(true);
-    useEffect(()=>{if(isDone){const timer=setTimeout(()=>setVisible(false),2500);return()=>clearTimeout(timer);}else{setVisible(true);}},[isDone]);
-    if(!visible)return null;
+    useEffect(()=>{if(isDone){const timer=setTimeout(()=>setVisible(false),1800);return()=>clearTimeout(timer);}else{setVisible(true);}},[isDone]);
+    if(!visible||(t.done&&!isCelebrating))return null;
     return(
       <div onClick={()=>onEdit(t)}
         style={{background:isDone?"#0a120a":"#0e0e0e",borderRadius:10,border:`1px solid ${isDone?"#30D15833":color+"33"}`,padding:"12px 14px",marginBottom:6,cursor:"pointer",display:"flex",alignItems:"center",gap:10,transition:"all .4s",opacity:isDone?.6:1}}
@@ -2763,6 +2811,55 @@ function DashboardView({tasks,buckets,onEdit,onCheck,celebratingIds,readOnly}){
     </div>
   );
 
+  // ── Tomorrow Preview Mode ────────────────────────────────────
+  if(dayFilter==="tomorrow"){
+    const tmrStr=(()=>{const d=new Date(todayStr()+"T00:00:00");d.setDate(d.getDate()+1);return d.toISOString().split("T")[0];})();
+    const tmrLbl=new Date(tmrStr+"T00:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+    const tmrAll=tasks.filter(t=>!excl(t)&&t.dueDate&&t.dueDate===tmrStr).sort((a,b)=>{const at=a.time?t2m(a.time):9999,bt=b.time?t2m(b.time):9999;return at-bt;});
+    const tmrEarly=tmrAll.filter(t=>!t.time||(t.time&&t2m(t.time)<720));
+    const tmrDay=tmrAll.filter(t=>t.time&&t2m(t.time)>=720&&t2m(t.time)<1080);
+    const tmrNight=tmrAll.filter(t=>t.time&&t2m(t.time)>=1080);
+    const TmrCard=({t})=>{
+      const bkt=buckets.find(b=>b.id===t.bucketId);
+      return(
+        <div onClick={()=>onEdit(t)} style={{background:"#0e0e0e",borderRadius:10,border:"1px solid #1a1a1a",padding:"11px 14px",marginBottom:6,cursor:"pointer",display:"flex",alignItems:"center",gap:10}}
+          onMouseEnter={e=>e.currentTarget.style.borderColor="#333"} onMouseLeave={e=>e.currentTarget.style.borderColor="#1a1a1a"}>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:13,color:TEXT,fontWeight:500,lineHeight:1.4,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title||"Untitled"}</div>
+            {bkt&&<div style={{fontSize:10,color:bkt.mainColor||MUTED,marginTop:2}}>{bkt.emoji} {bkt.label}</div>}
+          </div>
+          {t.time&&<div style={{fontSize:14,fontWeight:700,color:"#8E8EF0",flexShrink:0}}>{fmtTime(t.time)}</div>}
+        </div>
+      );
+    };
+    const TmrSection=({icon,label,color,items})=>items.length===0?null:(
+      <div style={{marginBottom:22}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+          <span style={{fontSize:14}}>{icon}</span>
+          <span style={{fontWeight:800,fontSize:12,color,letterSpacing:.8,textTransform:"uppercase"}}>{label}</span>
+          <div style={{flex:1,height:1,background:color+"22",marginLeft:4}}/>
+          <span style={{fontSize:11,color,fontWeight:700,background:color+"22",padding:"2px 8px",borderRadius:99}}>{items.length}</span>
+        </div>
+        {items.map(t=><TmrCard key={t.id} t={t}/>)}
+      </div>
+    );
+    return(
+      <div style={{flex:1,overflowY:"auto",padding:"16px 16px 32px"}}>
+        <div style={{maxWidth:600,margin:"0 auto"}}>
+          <div style={{marginBottom:20,textAlign:"center"}}>
+            <div style={{fontSize:11,color:MUTED,letterSpacing:1,textTransform:"uppercase",marginBottom:2}}>Tomorrow Preview</div>
+            <div style={{fontSize:18,fontWeight:800,color:TEXT,letterSpacing:-.3}}>{tmrLbl}</div>
+            <div style={{marginTop:6,fontSize:12,color:MUTED}}>{tmrAll.length} tasks planned</div>
+          </div>
+          {tmrAll.length===0&&<div style={{textAlign:"center",padding:"32px 0",color:MUTED,fontSize:13,fontStyle:"italic"}}>Nothing scheduled for tomorrow yet.</div>}
+          <TmrSection icon="🌅" label="Do Early" color="#FF9F0A" items={tmrEarly}/>
+          <TmrSection icon="☀️" label="During The Day" color="#5E5CE6" items={tmrDay}/>
+          <TmrSection icon="🌙" label="At Night" color="#0A84FF" items={tmrNight}/>
+        </div>
+      </div>
+    );
+  }
+
   const totalAll=overdue.length+missedToday.length+doNow.length;
   return(
     <div style={{flex:1,overflowY:"auto",padding:"16px 16px 32px"}}>
@@ -2785,9 +2882,9 @@ function DashboardView({tasks,buckets,onEdit,onCheck,celebratingIds,readOnly}){
         {laterToday.length>0&&(
           <div style={{marginTop:10,paddingTop:14,borderTop:`1px solid #141414`}}>
             <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:8}}>
-              <span style={{fontSize:10,fontWeight:700,color:"#333",letterSpacing:.8,textTransform:"uppercase"}}>Later Today</span>
+              <span style={{fontSize:10,fontWeight:700,color:"#666",letterSpacing:.8,textTransform:"uppercase"}}>Later Today</span>
               <div style={{flex:1,height:1,background:"#141414"}}/>
-              <span style={{fontSize:9,color:"#2a2a2a",background:"#0d0d0d",padding:"1px 6px",borderRadius:99}}>{laterToday.length}</span>
+              <span style={{fontSize:9,color:"#555",background:"#0d0d0d",padding:"1px 6px",borderRadius:99}}>{laterToday.length}</span>
             </div>
             <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:6,scrollbarWidth:"none",WebkitOverflowScrolling:"touch",marginRight:-16,paddingRight:16}}>
               {laterToday.map(t=>{
@@ -2804,8 +2901,8 @@ function DashboardView({tasks,buckets,onEdit,onCheck,celebratingIds,readOnly}){
                       </div>}
                       {t.time&&<span style={{fontSize:9,fontWeight:700,color:"#333",flexShrink:0,marginLeft:"auto"}}>{fmtTime(t.time)}</span>}
                     </div>
-                    <div style={{fontSize:11,color:isDone?"#30D158":"#3a3a3a",textDecoration:isDone?"line-through":"none",lineHeight:1.35,wordBreak:"break-word"}}>{t.title||"Untitled"}</div>
-                    {bkt&&<div style={{fontSize:9,color:"#252525",marginTop:5}}>{bkt.emoji} {bkt.label}</div>}
+                    <div style={{fontSize:11,color:isDone?"#30D158":"#888",textDecoration:isDone?"line-through":"none",lineHeight:1.35,wordBreak:"break-word"}}>{t.title||"Untitled"}</div>
+                    {bkt&&<div style={{fontSize:9,color:"#555",marginTop:5}}>{bkt.emoji} {bkt.label}</div>}
                   </div>
                 );
               })}
@@ -3369,7 +3466,7 @@ function Sidebar({viewMode,onView,onClose,onBack,onBoards,onSettings,onDisplay,o
           {row("🏷","Brands",()=>{onBrands();onClose();})}
           {row("👤","People",()=>{onPersons();onClose();})}
           {row("🏷","Labels",()=>{onLabels();onClose();})}
-          {row("📤","Import Tasks",()=>{onImport();onClose();})}
+
           {divider()}
           <div style={{fontSize:9,color:MUTED,fontWeight:700,letterSpacing:1.2,padding:"6px 18px 2px",textTransform:"uppercase"}}>More</div>
           {row("⊙","Display & Theme",()=>{onDisplay();onClose();})}
@@ -3390,7 +3487,7 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
   const [labels,setLabels]=useState([]),[showLabels,setShowLabels]=useState(false);
   const [showImport,setShowImport]=useState(false);
   const [persons,setPersons]=useState([]),[showPersons,setShowPersons]=useState(false);
-  const [editing,setEditing]=useState(null),[editingRef,setEditingRef]=useState(null),[showSettings,setShowSettings]=useState(false),[showBuckets,setShowBuckets]=useState(false),[showMembers,setShowMembers]=useState(false);
+  const [editing,setEditing]=useState(null),[editingRef,setEditingRef]=useState(null),[showSettings,setShowSettings]=useState(false),[showBuckets,setShowBuckets]=useState(false),[showMembers,setShowMembers]=useState(false),[showAdmin,setShowAdmin]=useState(false);
   const [activeTab,setActiveTab]=useState("all"),[viewMode,setViewMode]=useState("day"),[draggingId,setDraggingId]=useState(null);
   const [loading,setLoading]=useState(true),[userRole,setUserRole]=useState("editor"),[syncing,setSyncing]=useState(false);
   const handleEdit=useCallback(t=>{if(t&&t.isRef)setEditingRef(t);else setEditing(t);},[]);
@@ -3787,7 +3884,7 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
       {viewMode==="monthly"&&<MonthlyView tasks={tasks} buckets={buckets} onEdit={handleEdit} celebratingIds={celebratingIds}/>}
       {viewMode==="taba"&&<TabataView tasks={tasks} onCheck={checkTask} onEdit={setEditing} celebratingIds={celebratingIds}/>}
       {viewMode==="health"&&<HealthView tasks={tasks} buckets={buckets} onEdit={setEditing} activeTab={activeTab} childBucketIds={childBucketIds}/>}
-      {viewMode==="dash"&&<DashboardView tasks={tasks} buckets={buckets} onEdit={handleEdit} onCheck={checkTask} celebratingIds={celebratingIds} readOnly={readOnly}/>}
+      {viewMode==="dash"&&<DashboardView tasks={tasks} buckets={buckets} onEdit={handleEdit} onCheck={checkTask} celebratingIds={celebratingIds} readOnly={readOnly} dayFilter={dayFilter}/>}
       {viewMode==="onesies"&&<OnesiesView tasks={tasks} buckets={buckets} onEdit={handleEdit} onCheck={checkTask} onDelete={delTask} celebratingIds={celebratingIds} readOnly={readOnly} onAddTask={addTask} boardId={board.id}/>}
       {viewMode==="inbox"&&<InboxView tasks={tasks} buckets={buckets} boardId={board.id} onAdd={addTask} onEdit={handleEdit} readOnly={readOnly}/>}
       {viewMode==="ref"&&<RefBoardView tasks={tasks} buckets={buckets} boardId={board.id} onAdd={addTask} onEdit={handleEdit} readOnly={readOnly}/>}
@@ -3832,7 +3929,7 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
       {editing&&<EditMdl task={editing} tasks={tasks} buckets={buckets} actions={actions} brands={brands} persons={persons} labels={labels} onSave={saveTask} onClose={()=>setEditing(null)} onDelete={delTask} onDuplicate={duplicateTask} onOpenRef={r=>{setEditing(null);setEditingRef(r);}} readOnly={readOnly}/>}
       {editingRef&&<RefCardModal task={editingRef} onSave={saveRef} onClose={()=>setEditingRef(null)} onMore={t=>{setEditingRef(null);setEditing(t);}} readOnly={readOnly}/>}
       {showSearch&&<SearchMdl tasks={tasks} boards={null} allMode={false} onSelectTask={t=>{setShowSearch(false);handleEdit(t);}} onClose={()=>setShowSearch(false)}/>}
-      {showSettings&&<SettingsMdl settings={settings} onChange={saveSettings} onBuckets={()=>setShowBuckets(true)} onActions={()=>setShowActions(true)} onBrands={()=>setShowBrands(true)} onPersons={()=>setShowPersons(true)} onMembers={()=>setShowMembers(true)} onClose={()=>setShowSettings(false)} boardName={board.name} userRole={userRole} onCleanSort={cleanSort} onBoardSort={boardSort} onSnoozeOverdue={snoozeAllOverdue} onTabata={()=>setViewMode("taba")} onSync={forceRefresh} syncing={syncing} onShowLog={()=>setShowLog(true)} user={user}
+      {showSettings&&<SettingsMdl settings={settings} onChange={saveSettings} onBuckets={()=>setShowBuckets(true)} onActions={()=>setShowActions(true)} onBrands={()=>setShowBrands(true)} onPersons={()=>setShowPersons(true)} onMembers={()=>setShowMembers(true)} onClose={()=>setShowSettings(false)} boardName={board.name} userRole={userRole} onCleanSort={cleanSort} onBoardSort={boardSort} onSnoozeOverdue={snoozeAllOverdue} onTabata={()=>setViewMode("taba")} onSync={forceRefresh} syncing={syncing} onShowLog={()=>setShowLog(true)} user={user} onAdmin={()=>setShowAdmin(true)}
         onExportTasks={()=>{
           const lines=tasks.map(t=>{const bkt=buckets.find(b=>b.id===t.bucketId);return[t.title||"Untitled",`Status: ${COLS.find(c=>c.id===t.status)?.label||t.status}`,t.priority&&t.priority!=="normal"?`Priority: ${t.priority}`:"",bkt?`Bucket: ${bkt.emoji} ${bkt.label}`:"",t.action?`Action: ${t.action}`:"",t.dueDate?`Due: ${t.dueDate}`:"",t.frequency?`Freq: ${t.frequency}`:"",t.notes?`Notes: ${t.notes}`:""].filter(Boolean).join(" | ");});
           const blob=new Blob([lines.join("\n")],{type:"text/plain"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`daycrush-tasks-${board.name.replace(/[^a-z0-9]/gi,"_")}-${new Date().toISOString().slice(0,10)}.txt`;a.click();
@@ -3859,6 +3956,9 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
       {showImport&&<ImportModal boardId={board.id} buckets={buckets} onImport={importTasks} onClose={()=>setShowImport(false)}/>}
       {showActions&&<ActionMgr actions={actions} onSave={saveActions} onClose={()=>setShowActions(false)}/>}
       {showMembers&&<MembersModal board={board} userRole={userRole} currentUser={user} onClose={()=>setShowMembers(false)}/>}
+      {showAdmin&&<AdminSettingsMdl onClose={()=>setShowAdmin(false)} userRole={userRole} user={user} onMembers={()=>{setShowAdmin(false);setShowMembers(true);}} onImport={()=>{setShowAdmin(false);setShowImport(true);}} onExportTasks={()=>{const lines=tasks.map(t=>{const bkt=buckets.find(b=>b.id===t.bucketId);return[t.title||"Untitled",`Status: ${COLS.find(c=>c.id===t.status)?.label||t.status}`,t.priority&&t.priority!=="normal"?`Priority: ${t.priority}`:"",bkt?`Bucket: ${bkt.emoji} ${bkt.label}`:"",t.action?`Action: ${t.action}`:"",t.dueDate?`Due: ${t.dueDate}`:"",t.frequency?`Freq: ${t.frequency}`:"",t.notes?`Notes: ${t.notes}`:""].filter(Boolean).join(" | ");});const blob=new Blob([lines.join("
+")],{type:"text/plain"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`daycrush-tasks-${board.name.replace(/[^a-z0-9]/gi,"_")}-${new Date().toISOString().slice(0,10)}.txt`;a.click();}} onExportLog={()=>{const log=JSON.parse(localStorage.getItem(logKey)||"[]");const lines=log.map(e=>`[${new Date(e.at).toLocaleString()}] ${e.type.toUpperCase()}: ${e.title||"?"}${e.col?" → "+e.col:""}`);const blob=new Blob([lines.join("
+")],{type:"text/plain"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`daycrush-log-${board.name.replace(/[^a-z0-9]/gi,"_")}-${new Date().toISOString().slice(0,10)}.txt`;a.click();}} onExportBoard={()=>{const exportData={exportedAt:new Date().toISOString(),boardName:board.name,boardEmoji:board.emoji,buckets:buckets.map(b=>({id:b.id,label:b.label,emoji:b.emoji,color:b.color})),tasks:tasks.filter(t=>!t.done).map(t=>{const bkt=buckets.find(b=>b.id===t.bucketId);return{...t,_bucketLabel:bkt?bkt.label:null,_bucketEmoji:bkt?bkt.emoji:null};})};const json=JSON.stringify(exportData,null,2);const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([json],{type:"application/json"}));a.download=`${board.name.replace(/[^a-z0-9]/gi,"_")}-board-export.json`;a.click();}} onBoardSort={()=>{setShowAdmin(false);boardSort();}} onCleanSort={()=>{setShowAdmin(false);cleanSort();}} onSnoozeOverdue={()=>{setShowAdmin(false);snoozeAllOverdue();}} onSync={forceRefresh} syncing={syncing}/>}
     </div>
     </ThemeCtx.Provider>
   );
