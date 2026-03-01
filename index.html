@@ -58,7 +58,7 @@ const GAMEDAY_OPTS=["","GAMEDAY","DAY BEFORE GD","2 DAYS BEFORE GD","3 DAYS BEFO
 const DEFAULT_ACTIONS=[{id:"buy",emoji:"🛒",label:"Buy"},{id:"call",emoji:"📞",label:"Call"},{id:"email",emoji:"📧",label:"Email"},{id:"research",emoji:"🔍",label:"Research"},{id:"review",emoji:"👁",label:"Review"},{id:"schedule",emoji:"📅",label:"Schedule"},{id:"watch",emoji:"👀",label:"Watch"},{id:"read",emoji:"📖",label:"Read"},{id:"fix",emoji:"🔧",label:"Fix"},{id:"build",emoji:"🏗",label:"Build"},{id:"plan",emoji:"📋",label:"Plan"},{id:"pay",emoji:"💳",label:"Pay"}];
 const WDN=["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
 const WDL=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const DEF_SETTINGS={hideEmptyDo:false,defaultView:'cal',dayStartTime:'00:30',hideTimeFrames:false,showActionTag:false,showBucketColor:true,showCardBg:true,showDuration:true,showFrequency:true};
+const DEF_SETTINGS={hideEmptyDo:false,defaultView:'dash',dayStartTime:'00:30',hideTimeFrames:false,showActionTag:false,showBucketColor:true,showCardBg:true,showDuration:true,showFrequency:true};
 // Eastern time with configurable day-start rollover
 const etNow=()=>{
   const now=new Date();
@@ -1521,6 +1521,7 @@ function TaskCard({task,buckets,onEdit,onDelete,onCheck,onDuplicate,showBucket,o
   const celebrating_=celebrating;
   const bgActual=(bktBgColor&&sCardBg)?bktBgColor+"22":null;
   const isLight=bktBgColor?hexLum(bktBgColor)<0.3:false;
+  const hasCover=!!(task.attachments&&task.attachments.length>0&&task.attachments.some(a=>/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(a.url)));
   const cardBg=celebrating_?"#0d2a0d":isDone?"#0a120a":hasCover?"transparent":bgActual?bgActual:tcBg;
   const cardBorder=celebrating_?"#30D158":isDone?"#30D15833":dlShow?.color==="#FF453A"?"#FF453A44":bktMainColor?bktMainColor+"33":tcBorder;
   const cardText=null;
@@ -3488,7 +3489,7 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
   const [showImport,setShowImport]=useState(false);
   const [persons,setPersons]=useState([]),[showPersons,setShowPersons]=useState(false);
   const [editing,setEditing]=useState(null),[editingRef,setEditingRef]=useState(null),[showSettings,setShowSettings]=useState(false),[showBuckets,setShowBuckets]=useState(false),[showMembers,setShowMembers]=useState(false),[showAdmin,setShowAdmin]=useState(false);
-  const [activeTab,setActiveTab]=useState("all"),[viewMode,setViewMode]=useState("day"),[draggingId,setDraggingId]=useState(null);
+  const [activeTab,setActiveTab]=useState("all"),[viewMode,setViewMode]=useState("dash"),[draggingId,setDraggingId]=useState(null);
   const [loading,setLoading]=useState(true),[userRole,setUserRole]=useState("editor"),[syncing,setSyncing]=useState(false);
   const handleEdit=useCallback(t=>{if(t&&t.isRef)setEditingRef(t);else setEditing(t);},[]);
   const [celebratingIds,setCelebratingIds]=useState(new Set());
@@ -3556,7 +3557,7 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
           showDuration:lc.showDuration!==undefined?lc.showDuration:(sr.data.show_duration!==false),
           showFrequency:lc.showFrequency!==undefined?lc.showFrequency:(sr.data.show_frequency!==false)
         };
-        setSettings(s);setViewMode(s.defaultView||"day");setDayStartMins(timeStrToMins(s.dayStartTime||'00:30'));
+        setSettings(s);setViewMode(s.defaultView||"dash");setDayStartMins(timeStrToMins(s.dayStartTime||'00:30'));
         if(sr.data.actions_json){try{setActions(JSON.parse(sr.data.actions_json));}catch{setActions(DEFAULT_ACTIONS);}}
         if(sr.data.brands_json){try{setBrands(JSON.parse(sr.data.brands_json));}catch{}}
         if(sr.data.persons_json){try{setPersons(JSON.parse(sr.data.persons_json));}catch{}}
