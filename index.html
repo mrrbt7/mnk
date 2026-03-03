@@ -37,7 +37,10 @@ html.light .tab-item{background:#d8eaf8;border-color:#a8c4e0;color:#446688}
 html.light .tab-item:hover{background:#c8dff0;color:#0a0a1a}
 html.light .tab-item.active{background:#c0d8ea;border-color:#a8c4e0;border-bottom-color:#c0d8ea;color:#CAFF4C}
 html.light .tab-bar-line{background:#a8c4e0}
-html.light .lm-nav-active{background:rgba(202,255,76,0.18)!important;border-radius:8px}
+html.light .lm-nav-active{background:rgba(42,122,0,0.12)!important;border-radius:8px}
+/* LM: Pull-to-refresh overscroll */
+body{background:#000}
+html.light body{background:#deeaf5}
 /* Pull-to-refresh overscroll background */
 html.light{background:#deeaf5!important}
 /* EditMdl mark done / snooze buttons */
@@ -738,8 +741,8 @@ function LabelsMgrView({labels,onSave,onClose}){
         {list.map(a=>(
           <div key={a.id} style={{marginBottom:6}}>
             <div style={{background:mgrCard,borderRadius:8,border:`1px solid ${mgrBo}`,display:"flex",gap:6,alignItems:"center",padding:"9px 11px"}}>
-              <input value={a.emoji||""} onChange={e=>upd(a.id,"emoji",e.target.value)} style={{width:36,padding:"4px",borderRadius:6,border:`1px solid ${BORDER}`,background:"#222",color:TEXT,fontSize:16,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
-              <input value={a.label} onChange={e=>upd(a.id,"label",e.target.value)} style={{flex:1,padding:"7px 10px",borderRadius:6,border:`1px solid ${BORDER}`,background:"#222",color:TEXT,fontSize:13,outline:"none",fontFamily:"inherit"}} onFocus={FL} onBlur={FB}/>
+              <input value={a.emoji||""} onChange={e=>upd(a.id,"emoji",e.target.value)} style={{width:36,padding:"4px",borderRadius:6,border:`1px solid ${mgrBo}`,background:mgrBg,color:mgrTx,fontSize:16,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
+              <input value={a.label} onChange={e=>upd(a.id,"label",e.target.value)} style={{flex:1,padding:"7px 10px",borderRadius:6,border:`1px solid ${mgrBo}`,background:mgrBg,color:mgrTx,fontSize:13,outline:"none",fontFamily:"inherit"}} onFocus={FL} onBlur={FB}/>
               <MgrDotMenu onDelete={()=>del(a.id)}/>
             </div>
           </div>
@@ -879,18 +882,10 @@ function PersonMgrView({persons,onSave,onClose}){
       <div style={{flex:1,overflowY:"auto",padding:"16px 18px"}}>
         {list.map(a=>(
           <div key={a.id} style={{marginBottom:6}}>
-            <div style={{background:CARD_BG,borderRadius:8,border:`1px solid ${BORDER}`,display:"flex",gap:6,alignItems:"center",padding:"9px 11px"}}>
-              <input value={a.emoji||""} onChange={e=>upd(a.id,"emoji",e.target.value)} style={{width:36,padding:"4px",borderRadius:6,border:`1px solid ${BORDER}`,background:"#222",color:TEXT,fontSize:16,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
-              <input value={a.label} onChange={e=>upd(a.id,"label",e.target.value)} style={{flex:1,padding:"7px 10px",borderRadius:6,border:`1px solid ${BORDER}`,background:"#222",color:TEXT,fontSize:13,outline:"none",fontFamily:"inherit"}} onFocus={FL} onBlur={FB}/>
-              {confirmDel===a.id?(
-                <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                  <span style={{fontSize:10,color:"#FF453A"}}>Delete?</span>
-                  <button onClick={()=>setConfirmDel(null)} style={{padding:"4px 9px",borderRadius:5,border:`1px solid ${BORDER}`,background:"transparent",color:MUTED,cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>No</button>
-                  <button onClick={()=>del(a.id)} style={{padding:"4px 9px",borderRadius:5,border:"none",background:"#FF453A",color:"#fff",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:700}}>Yes</button>
-                </div>
-              ):(
-                <button onClick={()=>setConfirmDel(a.id)} style={{background:"none",border:"none",color:"#333",cursor:"pointer",fontSize:15,padding:"2px 7px"}} onMouseEnter={e=>e.currentTarget.style.color="#FF453A"} onMouseLeave={e=>e.currentTarget.style.color="#333"}>🗑</button>
-              )}
+            <div style={{background:mgrCard,borderRadius:8,border:`1px solid ${mgrBo}`,display:"flex",gap:6,alignItems:"center",padding:"9px 11px"}}>
+              <input value={a.emoji||""} onChange={e=>upd(a.id,"emoji",e.target.value)} style={{width:36,padding:"4px",borderRadius:6,border:`1px solid ${mgrBo}`,background:mgrBg,color:mgrTx,fontSize:16,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
+              <input value={a.label} onChange={e=>upd(a.id,"label",e.target.value)} style={{flex:1,padding:"7px 10px",borderRadius:6,border:`1px solid ${mgrBo}`,background:mgrBg,color:mgrTx,fontSize:13,outline:"none",fontFamily:"inherit"}} onFocus={FL} onBlur={FB}/>
+                            <MgrDotMenu onDelete={()=>del(a.id)}/>
             </div>
           </div>
         ))}
@@ -926,18 +921,10 @@ function BrandMgrView({brands,onSave,onClose}){
       <div style={{flex:1,overflowY:"auto",padding:"16px 18px"}}>
         {list.map(a=>(
           <div key={a.id} style={{marginBottom:6}}>
-            <div style={{background:CARD_BG,borderRadius:8,border:`1px solid ${BORDER}`,display:"flex",gap:6,alignItems:"center",padding:"9px 11px"}}>
-              <input value={a.emoji||""} onChange={e=>upd(a.id,"emoji",e.target.value)} style={{width:36,padding:"4px",borderRadius:6,border:`1px solid ${BORDER}`,background:"#222",color:TEXT,fontSize:16,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
-              <input value={a.label} onChange={e=>upd(a.id,"label",e.target.value)} style={{flex:1,padding:"7px 10px",borderRadius:6,border:`1px solid ${BORDER}`,background:"#222",color:TEXT,fontSize:13,outline:"none",fontFamily:"inherit"}} onFocus={FL} onBlur={FB}/>
-              {confirmDel===a.id?(
-                <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                  <span style={{fontSize:10,color:"#FF453A"}}>Delete?</span>
-                  <button onClick={()=>setConfirmDel(null)} style={{padding:"4px 9px",borderRadius:5,border:`1px solid ${BORDER}`,background:"transparent",color:MUTED,cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>No</button>
-                  <button onClick={()=>del(a.id)} style={{padding:"4px 9px",borderRadius:5,border:"none",background:"#FF453A",color:"#fff",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:700}}>Yes</button>
-                </div>
-              ):(
-                <button onClick={()=>setConfirmDel(a.id)} style={{background:"none",border:"none",color:"#333",cursor:"pointer",fontSize:15,padding:"2px 7px"}} onMouseEnter={e=>e.currentTarget.style.color="#FF453A"} onMouseLeave={e=>e.currentTarget.style.color="#333"}>🗑</button>
-              )}
+            <div style={{background:mgrCard,borderRadius:8,border:`1px solid ${mgrBo}`,display:"flex",gap:6,alignItems:"center",padding:"9px 11px"}}>
+              <input value={a.emoji||""} onChange={e=>upd(a.id,"emoji",e.target.value)} style={{width:36,padding:"4px",borderRadius:6,border:`1px solid ${mgrBo}`,background:mgrBg,color:mgrTx,fontSize:16,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
+              <input value={a.label} onChange={e=>upd(a.id,"label",e.target.value)} style={{flex:1,padding:"7px 10px",borderRadius:6,border:`1px solid ${mgrBo}`,background:mgrBg,color:mgrTx,fontSize:13,outline:"none",fontFamily:"inherit"}} onFocus={FL} onBlur={FB}/>
+                            <MgrDotMenu onDelete={()=>del(a.id)}/>
             </div>
           </div>
         ))}
@@ -970,18 +957,10 @@ function ActionMgr({actions,onSave,onClose}){
       <div style={{flex:1,overflowY:"auto",padding:"16px 18px"}}>
         {list.map(a=>(
           <div key={a.id} style={{marginBottom:6}}>
-            <div style={{background:CARD_BG,borderRadius:8,border:`1px solid ${BORDER}`,display:"flex",gap:6,alignItems:"center",padding:"9px 11px"}}>
-              <input value={a.emoji||""} onChange={e=>upd(a.id,"emoji",e.target.value)} style={{width:36,padding:"4px",borderRadius:6,border:`1px solid ${BORDER}`,background:"#222",color:TEXT,fontSize:16,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
-              <input value={a.label} onChange={e=>upd(a.id,"label",e.target.value)} style={{flex:1,padding:"7px 10px",borderRadius:6,border:`1px solid ${BORDER}`,background:"#222",color:TEXT,fontSize:13,outline:"none",fontFamily:"inherit"}} onFocus={FL} onBlur={FB}/>
-              {confirmDel===a.id?(
-                <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                  <span style={{fontSize:10,color:"#FF453A"}}>Delete?</span>
-                  <button onClick={()=>setConfirmDel(null)} style={{padding:"4px 9px",borderRadius:5,border:`1px solid ${BORDER}`,background:"transparent",color:MUTED,cursor:"pointer",fontSize:11,fontFamily:"inherit"}}>No</button>
-                  <button onClick={()=>del(a.id)} style={{padding:"4px 9px",borderRadius:5,border:"none",background:"#FF453A",color:"#fff",cursor:"pointer",fontSize:11,fontFamily:"inherit",fontWeight:700}}>Yes</button>
-                </div>
-              ):(
-                <button onClick={()=>setConfirmDel(a.id)} style={{background:"none",border:"none",color:"#333",cursor:"pointer",fontSize:15,padding:"2px 7px"}} onMouseEnter={e=>e.currentTarget.style.color="#FF453A"} onMouseLeave={e=>e.currentTarget.style.color="#333"}>🗑</button>
-              )}
+            <div style={{background:mgrCard,borderRadius:8,border:`1px solid ${mgrBo}`,display:"flex",gap:6,alignItems:"center",padding:"9px 11px"}}>
+              <input value={a.emoji||""} onChange={e=>upd(a.id,"emoji",e.target.value)} style={{width:36,padding:"4px",borderRadius:6,border:`1px solid ${mgrBo}`,background:mgrBg,color:mgrTx,fontSize:16,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
+              <input value={a.label} onChange={e=>upd(a.id,"label",e.target.value)} style={{flex:1,padding:"7px 10px",borderRadius:6,border:`1px solid ${mgrBo}`,background:mgrBg,color:mgrTx,fontSize:13,outline:"none",fontFamily:"inherit"}} onFocus={FL} onBlur={FB}/>
+                            <MgrDotMenu onDelete={()=>del(a.id)}/>
             </div>
           </div>
         ))}
@@ -1227,6 +1206,7 @@ function SettingsMdl({settings,onChange,onBuckets,onMembers,onActions,onBrands,o
 }
 
 function TaskNotesField({notes,readOnly,onChange}){
+  const {lm:eLm,border:eb,inp:ei,text:et,muted:em,cardBg:ec}=useTheme();
   const [expanded,setExpanded]=useState(false);
   const taRef=useRef();
   const hasNotes=notes&&notes.trim();
@@ -1310,6 +1290,9 @@ function MoreSection({open,onToggle,fullScreen,children}){
 }
 
 function AttachmentsMgr({attachments,readOnly,onChange}){
+  const {lm:eLm,border:eb,inp:ei,text:et,muted:em}=useTheme();
+  const bLbl={display:"block",fontSize:10,fontWeight:600,color:em,letterSpacing:1.2,textTransform:"uppercase",marginBottom:5};
+  const bInp={width:"100%",padding:"9px 11px",borderRadius:8,border:`1px solid ${eb}`,fontSize:13,fontFamily:"inherit",color:et,background:ei,marginBottom:12,boxSizing:"border-box",outline:"none"};
   const [newUrl,setNewUrl]=useState(""),[newName,setNewName]=useState("");
   const add=()=>{
     const url=newUrl.trim();if(!url)return;
@@ -2379,7 +2362,7 @@ function DurationView({tasks,buckets,actions,brands,persons,labels,activeTab,onE
   const [durPersonF,setDurPersonF]=useState("all");
   const [durLabelsF,setDurLabelsF]=useState([]); // multi-select array of label ids
   const [durMundaneF,setDurMundaneF]=useState("all"); // all | mundane | normal
-  const {navBg:dvNav,inp:dvInp,border:dvBrd,text:dvTxt,muted:dvMtd,lm:dvLm}=useTheme();
+  const {navBg:dvNav,inp:dvInp,border:dvBrd,text:dvTxt,muted:dvMtd,lm:dvLm,limeText:dvLimeText}=useTheme();
   const selStyle={padding:"5px 9px",borderRadius:7,border:`1px solid ${dvBrd}`,background:dvInp,color:dvTxt,fontSize:12,fontFamily:"inherit",cursor:"pointer",outline:"none"};
   // All tasks (no date gate - List view shows everything)
   const relevant=tasks;
@@ -2543,9 +2526,9 @@ function DurationView({tasks,buckets,actions,brands,persons,labels,activeTab,onE
     <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0}}>
       {/* Filter bar */}
       <div style={{padding:"10px 16px",borderBottom:`1px solid ${dvBrd}`,background:dvNav,flexShrink:0,display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-        <div style={{display:"flex",alignItems:"center",gap:6,padding:"4px 10px",borderRadius:8,border:`2px solid ${LIME}44`,background:dvLm?"#d8f0d0":"#0a140a"}}>
-          <span style={{fontSize:10,color:LIME,fontWeight:800,letterSpacing:.6}}>GROUP BY</span>
-          <select value={groupBy} onChange={e=>setGroupBy(e.target.value)} style={{...selStyle,background:dvLm?"#e8f5e0":"#0e1a0e",border:`1px solid ${LIME}44`,color:LIME}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,padding:"4px 10px",borderRadius:8,border:`2px solid ${dvLimeText}66`,background:dvLm?"#d0ead0":"#0a140a"}}>
+          <span style={{fontSize:10,color:dvLimeText,fontWeight:800,letterSpacing:.6}}>GROUP BY</span>
+          <select value={groupBy} onChange={e=>setGroupBy(e.target.value)} style={{...selStyle,background:dvLm?"#e8f5e0":"#0e1a0e",border:`1px solid ${dvLimeText}44`,color:dvLimeText}}>
           <option value="status">Status</option>
           <option value="date">Date</option>
           <option value="time">Time</option>
@@ -3618,7 +3601,7 @@ function QuickAddModal({boardId,buckets,onAdd,onClose}){
 }
 
 function Sidebar({viewMode,onView,onClose,onBack,onBoards,onSettings,onDisplay,onStats,onBuckets,onActions,onBrands,onPersons,onLabels,onDevices,onImport,board}){
-  const {lm:sLm,border:sBorder}=useTheme();
+  const {lm:sLm,border:sBorder,limeText:sLimeText}=useTheme();
   const sBg=sLm?"#deeaf5":"#0a0a0a";
   const sText=sLm?"#0a0a1a":"#e8e8e8";
   const sMuted=sLm?"#446688":MUTED;
@@ -3674,7 +3657,7 @@ function Sidebar({viewMode,onView,onClose,onBack,onBoards,onSettings,onDisplay,o
 }
 
 function GamedayView({tasks,buckets,onEdit,onCheck,onDelete,celebratingIds,readOnly,onAddTask,boardId}){
-  const {navBg:gdNav,border:gdBo,lm:gdLm}=useTheme();
+  const {navBg:gdNav,border:gdBo,lm:gdLm,limeText:gdLime}=useTheme();
   const gdTasks=tasks.filter(t=>!t.isRef&&t.gameday&&t.gameday.trim());
   const groups={};
   gdTasks.forEach(t=>{const k=t.gameday;if(!groups[k])groups[k]=[];groups[k].push(t);});
@@ -3685,10 +3668,10 @@ function GamedayView({tasks,buckets,onEdit,onCheck,onDelete,celebratingIds,readO
   const Sec=({gdKey,items})=>(
     <div style={{marginBottom:22}}>
       <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:8,paddingLeft:2}}>
-        <div style={{width:6,height:6,borderRadius:"50%",background:LIME,flexShrink:0}}/>
-        <span style={{fontSize:11,fontWeight:700,color:LIME,letterSpacing:.8,textTransform:"uppercase"}}>{gdKey}</span>
+        <div style={{width:6,height:6,borderRadius:"50%",background:gdLime,flexShrink:0}}/>
+        <span style={{fontSize:11,fontWeight:700,color:gdLime,letterSpacing:.8,textTransform:"uppercase"}}>{gdKey}</span>
         <span style={{fontSize:11,color:MUTED,marginLeft:2}}>{items.length}</span>
-        <div style={{flex:1,height:1,background:LIME+"22",marginLeft:4}}/>
+        <div style={{flex:1,height:1,background:gdLime+"44",marginLeft:4}}/>
       </div>
       {items.map(t=><TaskCard key={t.id} task={t} buckets={buckets} onEdit={onEdit} onDelete={onDelete} onCheck={onCheck} showBucket={true} listMode={true} readOnly={readOnly} celebrating={celebratingIds.has(t.id)} onDragStart={()=>{}} onDragOver={()=>{}} onDrop={()=>{}} isDragging={false}/>)}
     </div>
@@ -3696,7 +3679,7 @@ function GamedayView({tasks,buckets,onEdit,onCheck,onDelete,celebratingIds,readO
   return(
     <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0}}>
       <div style={{padding:"10px 16px 8px",borderBottom:`1px solid ${gdBo}`,background:gdNav,flexShrink:0,display:"flex",alignItems:"center",gap:8}}>
-        <span style={{fontSize:12,fontWeight:700,color:LIME,letterSpacing:.6,textTransform:"uppercase"}}>🏈 Gameday</span>
+        <span style={{fontSize:12,fontWeight:700,color:gdLime,letterSpacing:.6,textTransform:"uppercase"}}>🏈 Gameday</span>
         <span style={{fontSize:11,color:MUTED}}>{gdTasks.length} tasks</span>
         <div style={{flex:1}}/>
         <span style={{fontSize:10,color:"#333"}}>grouped by gameday</span>
@@ -3757,7 +3740,7 @@ function DeviceMgrView({devices,onSave,onClose}){
   );
 }
 function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
-  const [tasks,setTasks]=useState([]),[buckets,setBuckets]=useState([]),[settings,setSettings]=useState(DEF_SETTINGS);
+  const [tasks,setTasks]=useState([]),[buckets,setBuckets]=useState([]),[settings,setSettings]=useState(()=>{try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("dc_disp_")){const v=JSON.parse(localStorage.getItem(k)||"{}");if(v.lightMode)return{...DEF_SETTINGS,...v};}}}catch{}return DEF_SETTINGS;});
   const [actions,setActions]=useState(DEFAULT_ACTIONS),[activeAction,setActiveAction]=useState("all"),[showActions,setShowActions]=useState(false);
   const [brands,setBrands]=useState([]),[showBrands,setShowBrands]=useState(false);
   const [labels,setLabels]=useState([]),[showLabels,setShowLabels]=useState(false);
@@ -4125,10 +4108,10 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
   const lm=!!settings.lightMode;
   const _tVars=lm?{
     bg:"#deeaf5",navBg:"#ccdff0",cardBg:"#ffffff",col:"#e0edf8",border:"#a8c4e0",
-    text:"#0a0a1a",muted:"#446688",inp:"#e8f2fa"
+    text:"#0a0a1a",muted:"#446688",inp:"#e8f2fa",limeText:"#2a7a00",limeBtn:"#3a9a00"
   }:{
     bg:"#000",navBg:"#000",cardBg:"#1c1c1e",col:"#111",border:"#2a2a2a",
-    text:"#e8e8e8",muted:"#555",inp:"#1a1a1a"
+    text:"#e8e8e8",muted:"#555",inp:"#1a1a1a",limeText:LIME,limeBtn:LIME
   };
   const theme={..._tVars,lm,
     showActionTag:!!settings.showActionTag,
