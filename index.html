@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="theme-color" content="#000000"/>
-<title>MnK v3.13</title>
+<title>CIN v3.13</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -106,8 +106,8 @@ html.light input::placeholder,html.light textarea::placeholder{color:#6688aa!imp
 const {useState,useEffect,useRef,useCallback,useMemo,createContext,useContext}=React;
 const ThemeCtx=createContext({bg:"#000",navBg:"#000",cardBg:"#1c1c1e",col:"#111",border:"#2a2a2a",text:"#e8e8e8",muted:"#555",inp:"#1a1a1a",lm:false});
 const useTheme=()=>useContext(ThemeCtx);
-const SURL='https://ahbeusidnnciqyofxolh.supabase.co';
-const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFoYmV1c2lkbm5jaXF5b2Z4b2xoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDM0NzEsImV4cCI6MjA4Nzg3OTQ3MX0.pgCkpwqikpKa9Zjhji_PpvK9MyrMZ8Hr0pWH7JHPVeY';
+const SURL='https://hnfvtllodmgsipyuwzsx.supabase.co';
+const SKEY='sb_publishable_QXavQFS_CIRS1XRLpvLp1w_kgUReM17';
 const db=supabase.createClient(SURL,SKEY);
 const OWNER_EMAIL='unleashjarvis@gmail.com';
 const LIME="#CAFF4C",BORDER="#2a2a2a",TEXT="#e8e8e8",MUTED="#555",CARD_BG="#1c1c1e",COL_BG="#111",BLUE="#1d9bf0";
@@ -118,7 +118,7 @@ const GAMEDAY_OPTS=["","GAMEDAY","DAY BEFORE GD","2 DAYS BEFORE GD","3 DAYS BEFO
 const DEFAULT_ACTIONS=[{id:"buy",emoji:"🛒",label:"Buy"},{id:"call",emoji:"📞",label:"Call"},{id:"email",emoji:"📧",label:"Email"},{id:"research",emoji:"🔍",label:"Research"},{id:"review",emoji:"👁",label:"Review"},{id:"schedule",emoji:"📅",label:"Schedule"},{id:"watch",emoji:"👀",label:"Watch"},{id:"read",emoji:"📖",label:"Read"},{id:"fix",emoji:"🔧",label:"Fix"},{id:"build",emoji:"🏗",label:"Build"},{id:"plan",emoji:"📋",label:"Plan"},{id:"pay",emoji:"💳",label:"Pay"}];
 const WDN=["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
 const WDL=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const DEF_SETTINGS={hideEmptyDo:false,defaultView:'dash',lightMode:false,dayStartTime:'00:30',hideTimeFrames:false,showActionTag:false,showBucketColor:true,showCardBg:true,showDuration:true,showFrequency:true,hideMundane:false};
+const DEF_SETTINGS={hideEmptyDo:false,defaultView:'master',lightMode:true,dayStartTime:'00:30',hideTimeFrames:false,showActionTag:false,showBucketColor:true,showCardBg:true,showDuration:true,showFrequency:true,hideMundane:false};
 // Eastern time with configurable day-start rollover
 const etNow=()=>{
   const now=new Date();
@@ -196,9 +196,9 @@ const dueLabel=dd=>{
   if(diff===1)return{text:"Do tomorrow",color:"#FF9F0A",weight:600};
   return{text:`Do in ${diff} days`,color:MUTED,weight:400};
 };
-const dbToTask=r=>({id:r.id,title:r.title||"",notes:r.notes||"",status:r.status||"list",priority:r.priority||"normal",bucketId:r.bucket_id||null,dueDate:r.due_date||null,time:r.time?r.time.slice(0,5):"",frequency:r.frequency||"",duration:r.duration||"",link:r.link||"",attachments:r.attachments||[],manualOrder:Number(r.manual_order)||Date.now(),completionLog:r.completion_log||[],done:r.done||false,eventDate:r.event_date||null,action:r.action||'',brand:r.brand||'',gameday:r.gameday||'',person:r.person||'',isRef:r.is_ref||false,keepLink:r.keep_link||'',notifyMins:r.notify_mins!=null?r.notify_mins:null,labels:r.labels||[],mundane:r.mundane===true||r.mundane==='true',device:r.device||'',sprintId:r.sprint_id||''});
-const t2db=(t,bid)=>({id:t.id,board_id:bid,title:t.title,notes:t.notes,status:t.status,priority:t.priority,bucket_id:t.bucketId||null,due_date:t.dueDate||null,time:t.time||null,frequency:t.frequency,duration:t.duration,link:t.link||null,attachments:t.attachments||[],manual_order:t.manualOrder,completion_log:t.completionLog,done:t.done||false,event_date:t.eventDate||null,action:t.action||null,brand:t.brand||null,gameday:t.gameday||null,person:t.person||null,is_ref:t.isRef||false,keep_link:t.keepLink||null,labels:t.labels||[],mundane:t.mundane||false,device:t.device||null,sprint_id:t.sprintId||null});
-const mkTask=(status,bid)=>({id:genId(),title:"",notes:"",status,priority:"normal",bucketId:null,dueDate:todayStr(),time:"",frequency:"",duration:"",link:"",attachments:[],manualOrder:Date.now(),completionLog:[],done:false,eventDate:null,action:'',brand:'',gameday:'',person:'',isRef:false,keepLink:'',notifyMins:null,labels:[],mundane:false,device:'',sprintId:'',boardId:bid});
+const dbToTask=r=>({id:r.id,title:r.title||"",notes:r.notes||"",status:r.status||"list",priority:r.priority||"normal",bucketId:r.bucket_id||null,dueDate:r.due_date||null,time:r.time?r.time.slice(0,5):"",frequency:r.frequency||"",duration:r.duration||"",link:r.link||"",attachments:r.attachments||[],manualOrder:Number(r.manual_order)||Date.now(),completionLog:r.completion_log||[],done:r.done||false,eventDate:r.event_date||null,action:r.action||'',brand:r.brand||'',gameday:r.gameday||'',person:r.person||'',isRef:r.is_ref||false,keepLink:r.keep_link||'',notifyMins:r.notify_mins!=null?r.notify_mins:null,labels:r.labels||[],mundane:r.mundane===true||r.mundane==='true',device:r.device||'',sprintId:r.sprint_id||'',masterType:r.master_type||''});
+const t2db=(t,bid)=>({id:t.id,board_id:bid,title:t.title,notes:t.notes,status:t.status,priority:t.priority,bucket_id:t.bucketId||null,due_date:t.dueDate||null,time:t.time||null,frequency:t.frequency,duration:t.duration,link:t.link||null,attachments:t.attachments||[],manual_order:t.manualOrder,completion_log:t.completionLog,done:t.done||false,event_date:t.eventDate||null,action:t.action||null,brand:t.brand||null,gameday:t.gameday||null,person:t.person||null,is_ref:t.isRef||false,keep_link:t.keepLink||null,labels:t.labels||[],mundane:t.mundane||false,device:t.device||null,sprint_id:t.sprintId||null,master_type:t.masterType||null});
+const mkTask=(status,bid)=>({id:genId(),title:"",notes:"",status,priority:"normal",bucketId:null,dueDate:todayStr(),time:"",frequency:"",duration:"",link:"",attachments:[],manualOrder:Date.now(),completionLog:[],done:false,eventDate:null,action:'',brand:'',gameday:'',person:'',isRef:false,keepLink:'',notifyMins:null,labels:[],mundane:false,device:'',sprintId:'',masterType:'',boardId:bid});
 const taskDaysSinceDone=t=>{
   if(!t.completionLog||!t.completionLog.length)return null;
   const last=[...t.completionLog].sort((a,b)=>b.doneAt.localeCompare(a.doneAt))[0];
@@ -1172,7 +1172,7 @@ function SettingsMdl({settings,onChange,onBuckets,onMembers,onActions,onBrands,o
     </div>
   );
   const sec=label=>(<div style={{fontSize:9,fontWeight:700,letterSpacing:1.5,color:MUTED,textTransform:"uppercase",padding:"14px 0 6px",marginTop:2}}>{label}</div>);
-  const VIEWS=[{id:"dash",label:"Dashboard ◈"},{id:"onesies",label:"Onesies ①"},{id:"inbox",label:"Inbox ⊟"},{id:"cal",label:"Calendar ▦"},{id:"day",label:"Timeline ⏱"},{id:"board",label:"Board ⊞"},{id:"list",label:"List ☰"},{id:"health",label:"Health ⬡"},{id:"monthly",label:"Monthly+ ◷"},{id:"gameday",label:"Gameday 🏈"}];
+  const VIEWS=[{id:"master",label:"Master 🏠"},{id:"plan",label:"Plan ▣"},{id:"dash",label:"Dashboard ◈"},{id:"onesies",label:"Onesies ①"},{id:"inbox",label:"Inbox ⊟"},{id:"cal",label:"Calendar ▦"},{id:"day",label:"Timeline ⏱"},{id:"board",label:"Board ⊞"},{id:"list",label:"List ☰"},{id:"health",label:"Health ⬡"},{id:"monthly",label:"Monthly+ ◷"},{id:"gameday",label:"Gameday 🏈"}];
   return(
     <Modal onClose={onClose} maxWidth={360}>
       <div style={{padding:"18px 18px 4px"}}>
@@ -1332,7 +1332,7 @@ function EditMdl({task,tasks,buckets,actions,brands,persons,labels,devices,sprin
   const bLbl={display:"block",fontSize:10,fontWeight:600,color:em,letterSpacing:1.2,textTransform:"uppercase",marginBottom:5};
   const bInp={width:"100%",padding:"9px 11px",borderRadius:8,border:`1px solid ${eb}`,fontSize:13,fontFamily:"inherit",color:et,background:ei,marginBottom:12,boxSizing:"border-box",outline:"none"};
   const bSel={...{width:"100%",padding:"9px 11px",borderRadius:8,border:`1px solid ${eb}`,fontSize:13,fontFamily:"inherit",color:et,background:ei,marginBottom:12,boxSizing:"border-box",outline:"none"},cursor:"pointer"};
-  const [f,setF]=useState({...task,completionLog:task.completionLog||[],bucketId:task.bucketId||null,duration:task.duration||"",time:task.time||"",link:task.link||"",attachments:task.attachments||[],priority:task.priority||"normal",eventDate:task.eventDate||"",action:task.action||"",brand:task.brand||"",gameday:task.gameday||"",person:task.person||"",labels:task.labels||[],keepLink:task.keepLink||"",notifyMins:task.notifyMins!=null?task.notifyMins:null,mundane:task.mundane||false,device:task.device||"",sprintId:task.sprintId||""});
+  const [f,setF]=useState({...task,completionLog:task.completionLog||[],bucketId:task.bucketId||null,duration:task.duration||"",time:task.time||"",link:task.link||"",attachments:task.attachments||[],priority:task.priority||"normal",eventDate:task.eventDate||"",action:task.action||"",brand:task.brand||"",gameday:task.gameday||"",person:task.person||"",labels:task.labels||[],keepLink:task.keepLink||"",notifyMins:task.notifyMins!=null?task.notifyMins:null,mundane:task.mundane||false,device:task.device||"",sprintId:task.sprintId||"",masterType:task.masterType||""});
   const [editingLink,setEditingLink]=useState(false);
   const [showMore,setShowMore]=useState(false);
   const set=(k,v)=>setF(x=>({...x,[k]:v}));
@@ -1443,6 +1443,25 @@ function EditMdl({task,tasks,buckets,actions,brands,persons,labels,devices,sprin
             <label style={bLbl}>Frequency</label>
             <input value={f.frequency} onChange={e=>setFreq(e.target.value)} disabled={readOnly} placeholder="# or word" style={{...bInp,marginBottom:0,fontSize:11}} onFocus={FL} onBlur={FB}/>
             {fp.type&&<div style={{fontSize:9,color:"#4ECDC4",marginTop:2}}>→ {fp.label}</div>}
+          </div>
+        </div>
+
+        {/* Master Type */}
+        <div style={{marginBottom:12}}>
+          <label style={bLbl}>Master Type</label>
+          <div style={{display:"flex",gap:8}}>
+            {["FOOD","HOUSE"].map(mt=>{
+              const active=f.masterType===mt;
+              const colors={FOOD:{bg:active?"#fff3d0":"transparent",border:active?"#FF9F0A":"#ccc",text:active?"#FF9F0A":"#999",icon:"🍽"},HOUSE:{bg:active?(eLm?"#d8eaf8":"#0a1a2a"):"transparent",border:active?"#4EA8DE":"#ccc",text:active?"#4EA8DE":"#999",icon:"🏠"}};
+              const c=colors[mt];
+              return(
+                <button key={mt} onClick={readOnly?undefined:()=>set("masterType",active?"":mt)}
+                  style={{flex:1,padding:"9px 12px",borderRadius:9,border:`1.5px solid ${c.border}`,background:c.bg,color:c.text,fontWeight:active?800:500,fontSize:13,cursor:readOnly?"default":"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:6,transition:"all .15s"}}>
+                  {c.icon} {mt}
+                </button>
+              );
+            })}
+            {f.masterType&&<button onClick={readOnly?undefined:()=>set("masterType","")} style={{padding:"9px 12px",borderRadius:9,border:`1px solid ${eb}`,background:"transparent",color:em,fontSize:11,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>Clear</button>}
           </div>
         </div>
 
@@ -3750,6 +3769,107 @@ function SimpleView({tasks,onEdit}){
   );
 }
 
+function MasterTypeView({tasks,onEdit}){
+  const {text:mvTx,border:mvBo,cardBg:mvCard,muted:mvMu,navBg:mvNav,lm:mvLm}=useTheme();
+  const [activeTab,setActiveTab]=useState("FOOD");
+
+  const TABS=[
+    {id:"FOOD",icon:"🍽",label:"FOOD",accent:"#FF9F0A",accentBg:"#fff3d0",accentBgDark:"#1a0e00"},
+    {id:"HOUSE",icon:"🏠",label:"HOUSE",accent:"#4EA8DE",accentBg:"#d8eaf8",accentBgDark:"#0a1a2a"},
+  ];
+  const tab=TABS.find(t=>t.id===activeTab);
+
+  const tabTasks=[...tasks.filter(t=>!t.done&&!t.isRef&&t.masterType===activeTab&&t.dueDate)]
+    .sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+  const noDateTasks=[...tasks.filter(t=>!t.done&&!t.isRef&&t.masterType===activeTab&&!t.dueDate)]
+    .sort((a,b)=>(a.title||"").localeCompare(b.title||""));
+  const untyped=[...tasks.filter(t=>!t.done&&!t.isRef&&(!t.masterType||t.masterType==="")&&t.dueDate)]
+    .sort((a,b)=>a.dueDate.localeCompare(b.dueDate));
+
+  const dayLabel=(dueDate)=>{
+    const diff=daysDiff(dueDate);
+    if(diff<0)return{text:`${Math.abs(diff)}d overdue`,color:"#FF453A",weight:800};
+    if(diff===0)return{text:"Today",color:"#30D158",weight:800};
+    if(diff===1)return{text:"Tomorrow",color:"#FF9F0A",weight:700};
+    if(diff<=7)return{text:`${diff} days`,color:mvLm?"#446688":"#aaa",weight:600};
+    if(diff<=30)return{text:`${diff} days`,color:mvLm?"#6688aa":"#888",weight:500};
+    return{text:`${diff} days`,color:mvMu,weight:400};
+  };
+
+  const Row=({t,showNoDate})=>{
+    const dl=t.dueDate?dayLabel(t.dueDate):null;
+    const isOverdue=t.dueDate&&daysDiff(t.dueDate)<0;
+    const rowBg=isOverdue?(mvLm?"#ffe8e8":"#1a0808"):mvCard;
+    const rowBorder=isOverdue?"#FF453A44":mvBo;
+    return(
+      <div onClick={()=>onEdit(t)}
+        style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",borderRadius:10,background:rowBg,marginBottom:5,border:`1px solid ${rowBorder}`,cursor:"pointer",transition:"border-color .1s"}}
+        onMouseEnter={e=>e.currentTarget.style.borderColor=isOverdue?"#FF453A88":"#888"}
+        onMouseLeave={e=>e.currentTarget.style.borderColor=rowBorder}>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:14,fontWeight:600,color:mvTx,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title||<span style={{color:mvMu,fontStyle:"italic"}}>Untitled</span>}</div>
+          {t.notes&&t.notes.trim()&&<div style={{fontSize:11,color:mvMu,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginTop:2}}>{t.notes.trim()}</div>}
+        </div>
+        {dl&&<div style={{textAlign:"right",flexShrink:0}}>
+          <div style={{fontSize:13,fontWeight:dl.weight,color:dl.color,whiteSpace:"nowrap"}}>{dl.text}</div>
+        </div>}
+        {showNoDate&&<div style={{fontSize:11,color:mvMu,fontStyle:"italic",flexShrink:0}}>no date</div>}
+        <span style={{fontSize:13,color:mvMu,flexShrink:0}}>›</span>
+      </div>
+    );
+  };
+
+  return(
+    <div style={{display:"flex",flexDirection:"column",flex:1,minHeight:0}}>
+      {/* Content */}
+      <div style={{flex:1,overflowY:"auto",padding:"14px 16px 100px"}}>
+        <div style={{maxWidth:600,margin:"0 auto"}}>
+          {tabTasks.length===0&&noDateTasks.length===0&&(
+            <div style={{textAlign:"center",padding:"64px 0",color:mvMu,fontSize:14}}>
+              <div style={{fontSize:40,marginBottom:14}}>{tab.icon}</div>
+              <div style={{fontWeight:700,fontSize:15,color:mvLm?"#446688":mvMu,marginBottom:6}}>No {tab.label} items</div>
+              <div style={{fontSize:12,opacity:.7}}>Edit a task and set its Master Type to {tab.label}</div>
+            </div>
+          )}
+          {tabTasks.map(t=><Row key={t.id} t={t}/>)}
+          {noDateTasks.length>0&&(
+            <div style={{marginTop:tabTasks.length>0?20:0}}>
+              <div style={{fontSize:10,fontWeight:700,color:mvMu,letterSpacing:1.2,textTransform:"uppercase",marginBottom:8,paddingLeft:2}}>NO DATE SET</div>
+              {noDateTasks.map(t=><Row key={t.id} t={t} showNoDate={true}/>)}
+            </div>
+          )}
+          {untyped.length>0&&activeTab==="FOOD"&&(
+            <div style={{marginTop:28,paddingTop:16,borderTop:`1px solid ${mvBo}`}}>
+              <div style={{fontSize:10,fontWeight:700,color:mvMu,letterSpacing:1.2,textTransform:"uppercase",marginBottom:8,paddingLeft:2,opacity:.6}}>⚠ UNTYPED TASKS ({untyped.length})</div>
+              <div style={{fontSize:11,color:mvMu,marginBottom:10,fontStyle:"italic",opacity:.7}}>These tasks have a due date but no Master Type assigned yet.</div>
+              {untyped.map(t=><Row key={t.id} t={t}/>)}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom tab bar */}
+      <div style={{position:"absolute",bottom:0,left:0,right:0,display:"flex",background:mvLm?"#ccdff0":"#000",borderTop:`1px solid ${mvBo}`,zIndex:10,paddingBottom:"env(safe-area-inset-bottom,0px)"}}>
+        {TABS.map(t=>{
+          const isActive=activeTab===t.id;
+          const activeFg=t.accent;
+          const activeBg=mvLm?t.accentBg:t.accentBgDark;
+          return(
+            <button key={t.id} onClick={()=>setActiveTab(t.id)}
+              style={{flex:1,padding:"14px 8px 12px",border:"none",background:isActive?activeBg:"transparent",cursor:"pointer",fontFamily:"inherit",display:"flex",flexDirection:"column",alignItems:"center",gap:4,transition:"background .15s",borderTop:isActive?`2px solid ${activeFg}`:"2px solid transparent"}}>
+              <span style={{fontSize:22,lineHeight:1}}>{t.icon}</span>
+              <span style={{fontSize:11,fontWeight:isActive?800:500,color:isActive?activeFg:mvMu,letterSpacing:.5}}>{t.label}</span>
+              <span style={{fontSize:10,color:isActive?activeFg:mvMu,opacity:.7}}>
+                {tasks.filter(x=>!x.done&&!x.isRef&&x.masterType===t.id).length}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Sidebar({viewMode,onView,onClose,onBack,onBoards,onSettings,onDisplay,onStats,onBuckets,onActions,onBrands,onPersons,onLabels,onDevices,onSprints,onImport,board}){
   const {lm:sLm,border:sBorder,limeText:sLimeText}=useTheme();
   const sBg=sLm?"#deeaf5":"#0a0a0a";
@@ -3758,7 +3878,7 @@ function Sidebar({viewMode,onView,onClose,onBack,onBoards,onSettings,onDisplay,o
   const sHov=sLm?"#c5d8ec":"#111";
   const sActive=sLm?"#b8cfe8":"#161616";
   const sDivBorder=sLm?"#b0c8e0":BORDER;
-  const VIEWS=[{id:"dash",icon:"◈",label:"Dashboard"},{id:"cal",icon:"▦",label:"Calendar"},{id:"day",icon:"⏱",label:"Timeline"},{id:"board",icon:"⊞",label:"Board"},{id:"list",icon:"☰",label:"List"},{id:"simple",icon:"≡",label:"Simple"}];
+  const VIEWS=[{id:"master",icon:"🏠",label:"Master"},{id:"plan",icon:"▣",label:"Plan"},{id:"dash",icon:"◈",label:"Dashboard"},{id:"cal",icon:"▦",label:"Calendar"},{id:"day",icon:"⏱",label:"Timeline"},{id:"board",icon:"⊞",label:"Board"},{id:"list",icon:"☰",label:"List"},{id:"simple",icon:"≡",label:"Simple"}];
   const TOOLS=[{id:"inbox",icon:"⊟",label:"Inbox"},{id:"onesies",icon:"①",label:"Onesies"},{id:"monthly",icon:"◷",label:"Monthly+"},{id:"health",icon:"⬡",label:"Health"},{id:"ref",icon:"⊟",label:"Reference"},{id:"gameday",icon:"🏈",label:"Gameday"},{id:"taba",icon:"◉",label:"Tabata"},{id:"summ",icon:"◎",label:"Summary"},{id:"plan",icon:"▣",label:"Plan"},{id:"sprint",icon:"⚡",label:"Sprints"}];
   const row=(icon,label,onClick,active)=>(
     <button onClick={onClick} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"11px 18px",border:"none",background:active?sActive:"transparent",color:active?sText:sMuted,fontFamily:"inherit",fontSize:13,fontWeight:active?700:400,cursor:"pointer",textAlign:"left",borderRadius:0,transition:"background .1s"}}
@@ -4031,11 +4151,17 @@ function PlanView({tasks,buckets,onEdit,onCheck,onSnooze,readOnly,celebratingIds
   );
   const PlanRow=({t,isOverdue,isOneOff})=>{
     const bkt=buckets.find(b=>b.id===t.bucketId);
+    const bktMain=bkt?.mainColor||null;
+    const bktBg=bkt?.bgColor||null;
     const isCelebrating=celebratingIds.has(t.id);
     const isDone=t.done||isCelebrating;
     const isSnoozed=snoozedIds.has(t.id);
     const d=t.dueDate?daysDiff(t.dueDate):null;
     const overDays=(d!==null&&d<0)?Math.abs(d):0;
+    // Card background: bucket bgColor takes priority, then celebrate/overdue/default
+    const cardBg=isCelebrating?(pvLm?"#d8f5e0":"#0a140a"):isDone?(pvLm?"#e8f5e8":"#0a120a"):bktBg?(bktBg+"22"):(pvLm?"#ffffff":pvCard);
+    const cardBorder=isCelebrating?"#30D158":(bktMain?bktMain+"55":isOverdue?"#FF453A55":pvBo);
+    const leftAccent=bktMain||null;
     if(isSnoozed){
       return(
         <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",borderRadius:12,border:"1px solid #FF9F0A66",background:pvLm?"#fffbf0":"#1a0e00",marginBottom:6,transition:"all .3s"}}>
@@ -4048,16 +4174,17 @@ function PlanView({tasks,buckets,onEdit,onCheck,onSnooze,readOnly,celebratingIds
       );
     }
     return(
-      <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",borderRadius:12,border:`1px solid ${isCelebrating?"#30D158":isOverdue?"#FF453A55":pvBo}`,background:isCelebrating?(pvLm?"#d8f5e0":"#0a140a"):isDone?(pvLm?"#e8f5e8":"#0a120a"):(pvLm?"#ffffff":pvCard),marginBottom:6,opacity:isDone?.6:1,transition:"all .3s"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",borderRadius:12,border:`1px solid ${cardBorder}`,background:cardBg,marginBottom:6,opacity:isDone?.6:1,transition:"all .3s",borderLeft:leftAccent?`3px solid ${leftAccent}`:`1px solid ${cardBorder}`}}>
         {!isOneOff&&(t.time
-          ?<div style={{fontSize:13,fontWeight:800,color:isDone?"#30D158":isOverdue?"#FF453A":"#5E5CE6",flexShrink:0,minWidth:50,textAlign:"center"}}>{fmtTime(t.time)}</div>
-          :<div style={{fontSize:11,color:pvMu,flexShrink:0,minWidth:50,textAlign:"center"}}>{overDays>0?<span style={{color:"#FF453A",fontWeight:700}}>-{overDays}d</span>:"today"}</div>
+          ?<div style={{fontSize:18,fontWeight:800,color:isDone?"#30D158":isOverdue?"#FF453A":"#5E5CE6",flexShrink:0,minWidth:58,textAlign:"center",letterSpacing:-.5}}>{fmtTime(t.time)}</div>
+          :<div style={{fontSize:12,color:pvMu,flexShrink:0,minWidth:58,textAlign:"center"}}>{overDays>0?<span style={{color:"#FF453A",fontWeight:700,fontSize:14}}>-{overDays}d</span>:"today"}</div>
         )}
-        {isOneOff&&<div style={{fontSize:10,color:pvMu,flexShrink:0,minWidth:50,textAlign:"center",fontStyle:"italic"}}>no date</div>}
+        {isOneOff&&<div style={{fontSize:10,color:pvMu,flexShrink:0,minWidth:58,textAlign:"center",fontStyle:"italic"}}>no date</div>}
         <div style={{flex:1,minWidth:0,cursor:"pointer"}} onClick={()=>onEdit(t)}>
           <div style={{fontSize:14,fontWeight:600,color:isDone?"#30D158":(pvLm?"#1a1a1a":pvTx),textDecoration:isDone?"line-through":"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.3}}>{t.title||"Untitled"}</div>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginTop:2,flexWrap:"wrap"}}>
-            {bkt&&<span style={{fontSize:10,color:bkt.mainColor||pvMu}}>{bkt.emoji} {bkt.label}</span>}
+          <div style={{display:"flex",alignItems:"center",gap:6,marginTop:3,flexWrap:"wrap"}}>
+            {bkt&&<span style={{fontSize:10,color:bktMain||pvMu,fontWeight:bktMain?600:400}}>{bkt.emoji} {bkt.label}</span>}
+            {t.frequency&&t.frequency.trim()&&<span style={{fontSize:10,color:"#5E5CE6",background:"#5E5CE611",borderRadius:4,padding:"1px 5px",fontWeight:600}}>{t.frequency}</span>}
             {overDays>0&&<span style={{fontSize:10,fontWeight:700,color:"#FF453A",background:"#FF453A18",borderRadius:4,padding:"1px 5px"}}>⚠ {overDays}d overdue</span>}
             {isCelebrating&&<span style={{fontSize:11,color:"#30D158",fontWeight:700}}>✓ Done!</span>}
           </div>
@@ -4084,7 +4211,7 @@ function PlanView({tasks,buckets,onEdit,onCheck,onSnooze,readOnly,celebratingIds
         <div style={{flex:1}}/>
         <span style={{fontSize:10,color:pvMu}}>tap title to edit</span>
       </div>
-      <div style={{flex:1,overflowY:"auto",padding:"14px 16px",maxWidth:680,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+      <div style={{flex:1,overflowY:"auto",padding:"14px 16px",width:"100%",boxSizing:"border-box"}}>
         {planTasks.length===0&&oneOffTasks.length===0&&<div style={{textAlign:"center",padding:"56px 0",color:pvMu,fontSize:14}}>
           <div style={{fontSize:32,marginBottom:10}}>▣</div>
           Nothing due today — you're clear!
@@ -4245,7 +4372,7 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
   const [devices,setDevices]=useState([]),[showDevices,setShowDevices]=useState(false);
   const [sprints,setSprints]=useState([]),[showSprints,setShowSprints]=useState(false);
   const [editing,setEditing]=useState(null),[editingRef,setEditingRef]=useState(null),[showSettings,setShowSettings]=useState(false),[showBuckets,setShowBuckets]=useState(false),[showMembers,setShowMembers]=useState(false),[showAdmin,setShowAdmin]=useState(false);
-  const [activeTab,setActiveTab]=useState("all"),[viewMode,setViewMode]=useState("dash"),[draggingId,setDraggingId]=useState(null);
+  const [activeTab,setActiveTab]=useState("all"),[viewMode,setViewMode]=useState("master"),[draggingId,setDraggingId]=useState(null);
   const [loading,setLoading]=useState(true),[userRole,setUserRole]=useState("editor"),[syncing,setSyncing]=useState(false);
   const handleEdit=useCallback(t=>{if(t&&t.isRef)setEditingRef(t);else setEditing(t);},[]);
   const [celebratingIds,setCelebratingIds]=useState(new Set());
@@ -4315,7 +4442,7 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
           showDuration:lc.showDuration!==undefined?lc.showDuration:(sr.data.show_duration!==false),
           showFrequency:lc.showFrequency!==undefined?lc.showFrequency:(sr.data.show_frequency!==false)
         };
-        setSettings(s);setViewMode(s.defaultView||"dash");setDayStartMins(timeStrToMins(s.dayStartTime||'00:30'));
+        setSettings(s);setViewMode(s.defaultView||"master");setDayStartMins(timeStrToMins(s.dayStartTime||'00:30'));
         if(sr.data.actions_json){try{setActions(JSON.parse(sr.data.actions_json));}catch{setActions(DEFAULT_ACTIONS);}}
         if(sr.data.brands_json){try{setBrands(JSON.parse(sr.data.brands_json));}catch{}}
         if(sr.data.persons_json){try{setPersons(JSON.parse(sr.data.persons_json));}catch{}}
@@ -4680,35 +4807,12 @@ function MainApp({user,board,allBoards,onSwitchBoard,onBack,onSignOut}){
       {viewMode==="summ"&&<SummaryView tasks={visBucket} buckets={buckets} onEdit={handleEdit} celebratingIds={celebratingIds} dayFilter={dayFilter}/>}
       {viewMode==="plan"&&<PlanView tasks={visBucket} buckets={buckets} onEdit={handleEdit} onCheck={checkTask} onSnooze={t=>{const d=new Date(t.dueDate+"T00:00:00");d.setDate(d.getDate()+1);saveTask({...t,dueDate:d.toISOString().split("T")[0]});}} readOnly={readOnly} celebratingIds={celebratingIds}/>}
       {viewMode==="sprint"&&<SprintView sprints={sprints} onSaveSprints={saveSprints}/>}
+      {viewMode==="master"&&<div style={{display:"flex",flexDirection:"column",flex:1,minHeight:0,position:"relative"}}><MasterTypeView tasks={tasks} onEdit={handleEdit}/></div>}
       {viewMode==="simple"&&<SimpleView tasks={tasks} onEdit={handleEdit}/>}
       {viewMode==="list"&&<div style={{display:"flex",flexDirection:"column",flex:1,minHeight:0}}>
         <QuickAddBar boardId={board.id} onAdd={addTask} onOpenModal={()=>setShowQuickAdd(true)} readOnly={readOnly}/>
         <DurationView tasks={vis} buckets={buckets} actions={actions} brands={brands} persons={persons} labels={labels} devices={devices} activeTab={activeTab} onEdit={setEditing} onDelete={delTask} onCheck={checkTask} readOnly={readOnly} celebratingIds={celebratingIds} onAddTask={addTask} boardId={board.id}/>
       </div>}
-
-      <div style={{borderTop:`1px solid ${theme.border}`,background:theme.navBg,flexShrink:0,paddingBottom:"env(safe-area-inset-bottom,0px)"}}>
-        <div style={{display:"flex",alignItems:"stretch",height:54}}>
-          {[
-            {id:"dash",icon:"◈",label:"Dash"},
-            {id:"cal",icon:"▦",label:"Calendar"},
-            {id:"day",icon:"⏱",label:"Timeline"},
-            {id:"board",icon:"⊞",label:"Board"},
-            {id:"list",icon:"☰",label:"List"},
-            {id:"plan",icon:"▣",label:"Plan"},
-            {id:"__search__",icon:"⌕",label:"Search"},
-          ].map(v=>{
-            const active=v.id==="__search__"?false:viewMode===v.id;
-            return(
-              <button key={v.id}
-                onClick={()=>v.id==="__search__"?setShowSearch(true):setViewMode(v.id)}
-                style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,background:"none",border:"none",cursor:"pointer",color:active?(theme.lm?theme.limeText:LIME):theme.muted,borderTop:active?`2px solid ${theme.lm?theme.limeText:LIME}`:"2px solid transparent",transition:"color .15s,border-color .15s",padding:"6px 2px 4px"}} className={active&&theme.lm?"lm-nav-active":""}>
-                <span style={{fontSize:16,lineHeight:1}}>{v.icon}</span>
-                <span style={{fontSize:7.5,letterSpacing:.4,fontWeight:active?700:400,textTransform:"uppercase"}}>{v.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       {showSidebar&&<Sidebar viewMode={viewMode} onView={setViewMode} onClose={()=>setShowSidebar(false)} onBack={onBack} onBoards={()=>{setShowSidebar(false);onBack();}}  onSettings={()=>setShowSettings(true)} onDisplay={()=>setShowDisplay(true)} onStats={()=>setShowStats(true)} onBuckets={()=>setShowBuckets(true)} onActions={()=>setShowActions(true)} onBrands={()=>setShowBrands(true)} onPersons={()=>setShowPersons(true)} onLabels={()=>setShowLabels(true)} onDevices={()=>setShowDevices(true)} onSprints={()=>setShowSprints(true)} onImport={()=>setShowImport(true)} board={board}/>}
       {showQuickAdd&&(
