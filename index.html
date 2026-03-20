@@ -121,16 +121,69 @@ function Logo({size=24}){
   );
 }
 
-/* ── Modal ── */
-function Modal({onClose,children,maxWidth=490}){
+/* ── Modal ── (top=true pins it to top so keyboard doesn't push it off screen) */
+function Modal({onClose,children,maxWidth=490,top=false}){
   const{cardBg,border}=useTheme();
   return(
     <div onClick={e=>{if(e.target===e.currentTarget)onClose();}}
-      style={{position:"fixed",inset:0,background:"rgba(0,0,0,.5)",backdropFilter:"blur(4px)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
-      <div style={{background:cardBg,borderRadius:16,width:"100%",maxWidth,maxHeight:"93vh",overflow:"auto",border:`1px solid ${border}`,boxShadow:"0 24px 60px rgba(0,0,0,.3)"}}>
+      style={{position:"fixed",inset:0,background:"rgba(0,0,0,.5)",backdropFilter:"blur(4px)",zIndex:1000,display:"flex",alignItems:top?"flex-start":"center",justifyContent:"center",padding:16,paddingTop:top?62:16}}>
+      <div style={{background:cardBg,borderRadius:16,width:"100%",maxWidth,maxHeight:"85vh",overflow:"auto",border:`1px solid ${border}`,boxShadow:"0 24px 60px rgba(0,0,0,.3)"}}>
         {children}
       </div>
     </div>
+  );
+}
+
+/* ── Fridge Cheat Sheet ── */
+const FRIDGE_GUIDE=[
+  {icon:"🥚",name:"Eggs",days:"3–5 wks",note:"raw in shell"},
+  {icon:"🥛",name:"Milk",days:"5–7d",note:"opened"},
+  {icon:"🧈",name:"Butter",days:"1–3 mo",note:""},
+  {icon:"🫙",name:"Yogurt",days:"1–3 wks",note:"opened"},
+  {icon:"🧀",name:"Hard Cheese",days:"3–4 wks",note:"opened"},
+  {icon:"🧀",name:"Soft Cheese",days:"1–2 wks",note:"opened"},
+  {icon:"🍗",name:"Raw Chicken",days:"1–2d",note:""},
+  {icon:"🥩",name:"Raw Beef",days:"3–5d",note:""},
+  {icon:"🐟",name:"Raw Fish",days:"1–2d",note:""},
+  {icon:"🍖",name:"Cooked Meat",days:"3–4d",note:"any kind"},
+  {icon:"🍱",name:"Leftovers",days:"3–4d",note:"cooked food"},
+  {icon:"🍓",name:"Berries",days:"3–7d",note:""},
+  {icon:"🍎",name:"Apples",days:"4–6 wks",note:""},
+  {icon:"🍋",name:"Citrus",days:"3–4 wks",note:""},
+  {icon:"🥬",name:"Leafy Greens",days:"3–7d",note:""},
+  {icon:"🥦",name:"Broccoli",days:"3–5d",note:""},
+  {icon:"🥕",name:"Carrots",days:"2–3 wks",note:""},
+];
+
+function CheatSheetMdl({onClose}){
+  const{border,text,muted,lm}=useTheme();
+  return(
+    <Modal onClose={onClose} maxWidth={360}>
+      <div style={{padding:"16px 18px 0"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+          <div style={{fontWeight:800,fontSize:15,color:text}}>📋 Fridge Cheat Sheet</div>
+          <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:muted}}>✕</button>
+        </div>
+        <div style={{fontSize:10,color:muted,letterSpacing:1,textTransform:"uppercase",marginBottom:12}}>How long things last in the fridge</div>
+      </div>
+      <div style={{padding:"0 18px",overflowY:"auto"}}>
+        {FRIDGE_GUIDE.map((item,i)=>(
+          <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:`1px solid ${border}`}}>
+            <span style={{fontSize:20,width:28,flexShrink:0,textAlign:"center"}}>{item.icon}</span>
+            <div style={{flex:1,minWidth:0}}>
+              <span style={{fontSize:13,fontWeight:600,color:text}}>{item.name}</span>
+              {item.note&&<span style={{fontSize:11,color:muted,marginLeft:6,fontStyle:"italic"}}>{item.note}</span>}
+            </div>
+            <div style={{flexShrink:0,textAlign:"right"}}>
+              <span style={{fontSize:13,fontWeight:800,color:"#30D158",fontVariantNumeric:"tabular-nums"}}>{item.days}</span>
+            </div>
+          </div>
+        ))}
+        <div style={{padding:"12px 0",fontSize:11,color:muted,textAlign:"center",fontStyle:"italic"}}>
+          When in doubt, throw it out 🗑
+        </div>
+      </div>
+    </Modal>
   );
 }
 
@@ -225,8 +278,6 @@ function EditMdl({task,onSave,onClose,onDelete}){
             placeholder={isFood?"Item name…":"Task title…"} onFocus={FL} onBlur={FB}/>
           <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:muted,flexShrink:0}}>✕</button>
         </div>
-
-        {/* Master Type */}
         <div style={{marginBottom:12}}>
           <label style={lbl}>Type</label>
           <div style={{display:"flex",gap:8}}>
@@ -241,15 +292,11 @@ function EditMdl({task,onSave,onClose,onDelete}){
             })}
           </div>
         </div>
-
-        {/* Date */}
         <div style={{marginBottom:12}}>
           <label style={lbl}>{isFood?"Expiry Date":"Due Date"}</label>
           <input type="date" value={f.dueDate||""} onChange={e=>set("dueDate",e.target.value)}
             style={{...inp2,marginBottom:0,colorScheme:lm?"light":"dark"}} onFocus={FL} onBlur={FB}/>
         </div>
-
-        {/* Frequency (house only) */}
         {!isFood&&(
           <div style={{marginBottom:12}}>
             <label style={lbl}>Repeat Frequency</label>
@@ -258,14 +305,10 @@ function EditMdl({task,onSave,onClose,onDelete}){
             {fp.type&&<div style={{fontSize:10,color:"#4ECDC4",marginTop:3}}>→ {fp.label}</div>}
           </div>
         )}
-
-        {/* Notes */}
         <div style={{marginBottom:12}}>
           <label style={lbl}>Notes</label>
           <NotesField notes={f.notes} readOnly={false} onChange={v=>set("notes",v)}/>
         </div>
-
-        {/* Actions */}
         <div style={{display:"flex",gap:8,marginBottom:14}}>
           <button onClick={markDone}
             style={{flex:1,padding:"11px",borderRadius:9,border:`1px solid #30D15855`,background:lm?"#d8f5e0":"#0a140a",color:lm?"#1a7a3a":"#30D158",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"inherit"}}>
@@ -279,7 +322,6 @@ function EditMdl({task,onSave,onClose,onDelete}){
             </button>
           )}
         </div>
-
         <div style={{display:"flex",gap:8,paddingBottom:16,borderTop:`1px solid ${border}`,paddingTop:12}}>
           <button onClick={()=>{if(window.confirm("Delete this item?"))onDelete();}}
             style={{padding:"9px 16px",borderRadius:8,border:"1px solid #FF453A44",background:"transparent",color:"#FF453A",cursor:"pointer",fontSize:12,fontFamily:"inherit"}}>
@@ -295,9 +337,9 @@ function EditMdl({task,onSave,onClose,onDelete}){
   );
 }
 
-/* ── Quick Add Modal ── */
+/* ── Quick Add Modal (pinned to top so keyboard doesn't cover it) ── */
 function QuickAddModal({boardId,onAdd,onClose,defaultType}){
-  const{border,text,muted,inp,cardBg,lm}=useTheme();
+  const{border,text,muted,inp,lm}=useTheme();
   const[title,setTitle]=useState("");
   const[date,setDate]=useState(todayStr());
   const[masterType,setMasterType]=useState(defaultType||"");
@@ -314,13 +356,12 @@ function QuickAddModal({boardId,onAdd,onClose,defaultType}){
   };
   const MT=[{id:"FOOD",icon:"🍽",accent:"#FF9F0A"},{id:"HOUSE",icon:"🏠",accent:"#4EA8DE"}];
   return(
-    <Modal onClose={onClose} maxWidth={400}>
+    <Modal onClose={onClose} maxWidth={400} top>
       <div style={{padding:"18px 18px 16px"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
           <span style={{fontWeight:700,fontSize:15,color:text}}>+ Add Item</span>
           <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:muted}}>✕</button>
         </div>
-        {/* Type toggle */}
         <div style={{display:"flex",gap:8,marginBottom:12}}>
           {MT.map(mt=>{
             const active=masterType===mt.id;
@@ -352,7 +393,7 @@ function QuickAddModal({boardId,onAdd,onClose,defaultType}){
 
 /* ── Display Settings Modal ── */
 function DisplayMdl({settings,onChange,onClose}){
-  const{border,text,muted,inp,cardBg,lm}=useTheme();
+  const{border,text,muted,lm}=useTheme();
   const tog=k=>onChange({...settings,[k]:!settings[k]});
   const row=(label,key,sub)=>(
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 0",borderBottom:`1px solid ${border}`}}>
@@ -381,8 +422,8 @@ function DisplayMdl({settings,onChange,onClose}){
 }
 
 /* ── Sidebar ── */
-function Sidebar({onClose,onDisplay,onSignOut}){
-  const{border,text,muted,navBg,lm}=useTheme();
+function Sidebar({onClose,onDisplay,onSignOut,onCheatSheet}){
+  const{border,text,lm}=useTheme();
   const bg=lm?"#ccdff0":"#0a0a0a";
   const hov=lm?"#b8d0e8":"#111";
   const row=(icon,label,onClick)=>(
@@ -403,6 +444,7 @@ function Sidebar({onClose,onDisplay,onSignOut}){
         </div>
         <div style={{flex:1,overflowY:"auto",paddingTop:8}}>
           {row("⊙","Display & Theme",()=>{onDisplay();onClose();})}
+          {row("📋","Fridge Cheat Sheet",()=>{onCheatSheet();onClose();})}
         </div>
         <div style={{borderTop:`1px solid ${border}`,padding:"8px 0"}}>
           {row("⏻","Sign Out",()=>{onSignOut();onClose();})}
@@ -412,9 +454,10 @@ function Sidebar({onClose,onDisplay,onSignOut}){
   );
 }
 
-/* ── Main View (FOOD + HOUSE tabs) ── */
+/* ── Main View ── */
 function MainView({tasks,onEdit,onCheck,activeTab,onTabChange,readOnly}){
   const{text,border,cardBg,muted,lm}=useTheme();
+  const[search,setSearch]=useState("");
 
   const TABS=[
     {id:"FOOD",icon:"🍽",label:"FOOD",accent:"#FF9F0A",accentBg:lm?"#fff8ec":"#1a1200"},
@@ -423,18 +466,24 @@ function MainView({tasks,onEdit,onCheck,activeTab,onTabChange,readOnly}){
   const tab=TABS.find(t=>t.id===activeTab)||TABS[0];
   const isFood=activeTab==="FOOD";
 
-  const tabItems=[...tasks.filter(t=>!t.done&&t.masterType===activeTab)]
+  const q=search.trim().toLowerCase();
+  const tabItems=[...tasks.filter(t=>!t.done&&t.masterType===activeTab&&(!q||t.title.toLowerCase().includes(q)||t.notes.toLowerCase().includes(q)))]
     .sort((a,b)=>{
       const da=a.dueDate?daysDiff(a.dueDate):999;
       const db_=b.dueDate?daysDiff(b.dueDate):999;
       return da-db_;
     });
+
   const noDate=tabItems.filter(t=>!t.dueDate);
   const withDate=tabItems.filter(t=>t.dueDate);
   const overdue=withDate.filter(t=>daysDiff(t.dueDate)<0);
   const today=withDate.filter(t=>daysDiff(t.dueDate)===0);
-  const soon=withDate.filter(t=>daysDiff(t.dueDate)>0&&daysDiff(t.dueDate)<=3);
+  const soon=withDate.filter(t=>daysDiff(t.dueDate)>=1&&daysDiff(t.dueDate)<=3);
   const later=withDate.filter(t=>daysDiff(t.dueDate)>3);
+  // FOOD-specific buckets
+  const foodThisWeek=withDate.filter(t=>daysDiff(t.dueDate)>=0&&daysDiff(t.dueDate)<=7);
+  const foodSoon=withDate.filter(t=>daysDiff(t.dueDate)>=8&&daysDiff(t.dueDate)<=12);
+  const foodGood=withDate.filter(t=>daysDiff(t.dueDate)>12);
 
   const dateLabel=(dueDate)=>{
     const diff=daysDiff(dueDate);
@@ -444,6 +493,7 @@ function MainView({tasks,onEdit,onCheck,activeTab,onTabChange,readOnly}){
       if(diff===0)return{text:"Expires today",color:"#FF453A",weight:800};
       if(diff===1)return{text:"Expires tomorrow",color:"#FF9F0A",weight:700};
       if(diff<=7)return{text:`Expires in ${diff}d`,color:"#FF9F0A",weight:600};
+      if(diff<=12)return{text:`Expires in ${diff}d`,color:"#FFD60A",weight:500};
       return{text:`Expires in ${diff}d`,color:lm?"#446688":"#888",weight:400};
     } else {
       if(diff<0)return{text:`${Math.abs(diff)}d overdue`,color:"#FF453A",weight:800};
@@ -481,13 +531,14 @@ function MainView({tasks,onEdit,onCheck,activeTab,onTabChange,readOnly}){
     );
   };
 
-  const Sec=({label,color,items})=>{
+  const Sec=({label,color,items,sublabel})=>{
     if(!items.length)return null;
     return(
       <div style={{marginBottom:18}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
           <div style={{width:3,height:14,borderRadius:2,background:color,flexShrink:0}}/>
           <span style={{fontSize:10,fontWeight:700,color,letterSpacing:1.2,textTransform:"uppercase"}}>{label}</span>
+          {sublabel&&<span style={{fontSize:10,color:muted,opacity:.7}}>{sublabel}</span>}
           <span style={{fontSize:10,color:muted}}>{items.length}</span>
         </div>
         {items.map(t=><Row key={t.id} t={t}/>)}
@@ -495,29 +546,45 @@ function MainView({tasks,onEdit,onCheck,activeTab,onTabChange,readOnly}){
     );
   };
 
-  const totalCount=tasks.filter(t=>!t.done&&t.masterType===activeTab).length;
-
   return(
     <div style={{display:"flex",flexDirection:"column",flex:1,minHeight:0,position:"relative"}}>
-      {/* Scrollable content with bottom padding for tab bar */}
+
+      {/* Search bar */}
+      <div style={{padding:"8px 14px",borderBottom:`1px solid ${border}`,background:lm?"#d6e8f5":"#0a0a0a",flexShrink:0}}>
+        <div style={{position:"relative",maxWidth:600,margin:"0 auto"}}>
+          <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",fontSize:14,color:muted,pointerEvents:"none"}}>🔍</span>
+          <input
+            value={search}
+            onChange={e=>setSearch(e.target.value)}
+            placeholder={isFood?"Search food items…":"Search tasks…"}
+            style={{width:"100%",padding:"7px 30px 7px 32px",borderRadius:9,border:`1px solid ${border}`,background:lm?"#e8f2fa":"#1a1a1a",color:text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}
+            onFocus={FL} onBlur={FB}
+          />
+          {search&&(
+            <button onClick={()=>setSearch("")} style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",fontSize:14,color:muted,lineHeight:1,padding:2}}>✕</button>
+          )}
+        </div>
+      </div>
+
+      {/* Scrollable content */}
       <div style={{flex:1,overflowY:"auto",padding:"14px 16px 100px"}}>
         <div style={{maxWidth:600,margin:"0 auto"}}>
           {tabItems.length===0&&(
             <div style={{textAlign:"center",padding:"64px 0",color:muted}}>
-              <div style={{fontSize:44,marginBottom:14}}>{tab.icon}</div>
+              <div style={{fontSize:44,marginBottom:14}}>{q?"🔍":tab.icon}</div>
               <div style={{fontWeight:700,fontSize:15,color:lm?"#446688":"#aaa",marginBottom:6}}>
-                No {isFood?"food items":"tasks"} yet
+                {q?`No results for "${search}"`:(isFood?"No food items yet":"No tasks yet")}
               </div>
-              <div style={{fontSize:12,opacity:.7}}>
-                Tap <strong>+</strong> to add {isFood?"something expiring soon":"a task"}
-              </div>
+              {!q&&<div style={{fontSize:12,opacity:.7}}>Tap <strong>+</strong> to add {isFood?"something expiring soon":"a task"}</div>}
             </div>
           )}
+
           {isFood?(
             <>
               <Sec label="Expired" color="#FF453A" items={overdue}/>
-              <Sec label="Expires Soon" color="#FF9F0A" items={[...today,...soon]}/>
-              <Sec label="Still Good" color="#30D158" items={later}/>
+              <Sec label="Expiring This Week" color="#FF9F0A" sublabel="within 7 days" items={foodThisWeek}/>
+              <Sec label="Expiring Soon" color="#FFD60A" sublabel="8–12 days" items={foodSoon}/>
+              <Sec label="Still Good" color="#30D158" items={foodGood}/>
               {noDate.length>0&&<Sec label="No Date" color={muted} items={noDate}/>}
             </>
           ):(
@@ -538,7 +605,7 @@ function MainView({tasks,onEdit,onCheck,activeTab,onTabChange,readOnly}){
           const isActive=activeTab===t.id;
           const cnt=tasks.filter(x=>!x.done&&x.masterType===t.id).length;
           return(
-            <button key={t.id} onClick={()=>onTabChange(t.id)}
+            <button key={t.id} onClick={()=>{onTabChange(t.id);setSearch("");}}
               style={{flex:1,padding:"13px 8px 11px",border:"none",background:isActive?t.accentBg:"transparent",cursor:"pointer",fontFamily:"inherit",display:"flex",flexDirection:"column",alignItems:"center",gap:3,transition:"background .15s",borderTop:isActive?`2px solid ${t.accent}`:"2px solid transparent"}}>
               <span style={{fontSize:22,lineHeight:1}}>{t.icon}</span>
               <span style={{fontSize:11,fontWeight:isActive?800:500,color:isActive?t.accent:muted,letterSpacing:.5}}>{t.label}</span>
@@ -560,10 +627,13 @@ function MainApp({user,board,onSignOut}){
   const[showQuickAdd,setShowQuickAdd]=useState(false);
   const[showSidebar,setShowSidebar]=useState(false);
   const[showDisplay,setShowDisplay]=useState(false);
+  const[showCheatSheet,setShowCheatSheet]=useState(false);
   const[activeTab,setActiveTab]=useState("FOOD");
   const[celebratingIds,setCelebratingIds]=useState(new Set());
+  const[quickTitle,setQuickTitle]=useState("");
   const celebRef=useRef(new Set());
   const subRef=useRef(null);
+  const quickRef=useRef(null);
   const[settings,setSettings]=useState({lightMode:true});
   const dispKey=`mnk_disp_${user.id}_${board.id}`;
 
@@ -582,19 +652,16 @@ function MainApp({user,board,onSignOut}){
     await db.from("board_settings").upsert({board_id:board.id,display_json:JSON.stringify(s)},{onConflict:"board_id"});
   };
 
-  /* Apply theme on mount and settings change */
   useEffect(()=>{
     document.documentElement.classList.toggle("light",!!settings.lightMode);
   },[settings.lightMode]);
 
-  /* Load tasks */
   const loadTasks=async()=>{
     const{data}=await db.from("tasks").select("*").eq("board_id",board.id).eq("done",false);
     if(data)setTasks(data.map(dbToTask));
     setLoading(false);
   };
 
-  /* Realtime */
   useEffect(()=>{
     loadTasks();
     subRef.current=db.channel(`tasks_${board.id}`)
@@ -659,6 +726,17 @@ function MainApp({user,board,onSignOut}){
     }
   };
 
+  /* Quick add from inline nav input */
+  const handleQuickAdd=()=>{
+    if(!quickTitle.trim())return;
+    const t=mkTask(board.id,activeTab);
+    t.title=quickTitle.trim();
+    t.dueDate=todayStr();
+    addTask(t);
+    setQuickTitle("");
+    quickRef.current&&quickRef.current.focus();
+  };
+
   const lm=!!settings.lightMode;
   const theme={
     bg:lm?"#deeaf5":"#000",navBg:lm?"#ccdff0":"#000",
@@ -677,20 +755,46 @@ function MainApp({user,board,onSignOut}){
   return(
     <ThemeCtx.Provider value={theme}>
     <div style={{height:"100%",display:"flex",flexDirection:"column",background:theme.bg,color:theme.text}}>
+
       {/* Nav bar */}
-      <div style={{background:theme.navBg,borderBottom:`1px solid ${theme.border}`,padding:"0 16px",flexShrink:0}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",height:48}}>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <button onClick={()=>setShowSidebar(true)} style={{background:"none",border:"none",cursor:"pointer",color:theme.muted,fontSize:18,padding:"0 4px",lineHeight:1}}>☰</button>
-            <Logo size={22}/>
-            <span style={{fontWeight:800,fontSize:16,letterSpacing:-.5,color:theme.text}}>MnK</span>
-            {syncing&&<span style={{fontSize:8,color:"#30D158",letterSpacing:1,textTransform:"uppercase",marginLeft:4}}>SYNCING…</span>}
+      <div style={{background:theme.navBg,borderBottom:`1px solid ${theme.border}`,padding:"0 12px",flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",height:50,gap:8}}>
+
+          {/* Left: menu + logo */}
+          <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+            <button onClick={()=>setShowSidebar(true)} style={{background:"none",border:"none",cursor:"pointer",color:theme.muted,fontSize:18,padding:"0 2px",lineHeight:1}}>☰</button>
+            <Logo size={20}/>
+            <span style={{fontWeight:800,fontSize:15,letterSpacing:-.5,color:theme.text}}>MnK</span>
+            {syncing&&<span style={{fontSize:8,color:"#30D158",letterSpacing:1,textTransform:"uppercase"}}>SYNCING</span>}
           </div>
-          <button
-            onClick={()=>{setShowQuickAdd(true);}}
-            style={{width:36,height:36,borderRadius:10,border:"none",background:LIME,color:"#000",fontSize:24,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-            +
-          </button>
+
+          {/* Right: inline quick-add input + plus button */}
+          <div style={{display:"flex",alignItems:"center",gap:6,flex:1,justifyContent:"flex-end",minWidth:0}}>
+            <input
+              ref={quickRef}
+              value={quickTitle}
+              onChange={e=>setQuickTitle(e.target.value)}
+              onKeyDown={e=>{
+                if(e.key==="Enter"){
+                  if(quickTitle.trim())handleQuickAdd();
+                  else setShowQuickAdd(true);
+                }
+                if(e.key==="Escape"){setQuickTitle("");e.target.blur();}
+              }}
+              placeholder={activeTab==="FOOD"?"Add food…":"Add task…"}
+              style={{flex:1,maxWidth:180,minWidth:0,padding:"7px 10px",borderRadius:8,border:`1px solid ${quickTitle?theme.border+"bb":theme.border}`,background:theme.inp,color:theme.text,fontSize:14,fontFamily:"inherit",outline:"none",transition:"border-color .15s"}}
+              onFocus={e=>e.target.style.borderColor="#888"}
+              onBlur={e=>e.target.style.borderColor=""}
+            />
+            <button
+              onClick={()=>{
+                if(quickTitle.trim())handleQuickAdd();
+                else setShowQuickAdd(true);
+              }}
+              style={{width:36,height:36,borderRadius:10,border:"none",background:LIME,color:"#000",fontSize:24,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              +
+            </button>
+          </div>
         </div>
       </div>
 
@@ -705,8 +809,9 @@ function MainApp({user,board,onSignOut}){
       />
 
       {/* Modals */}
-      {showSidebar&&<Sidebar onClose={()=>setShowSidebar(false)} onDisplay={()=>setShowDisplay(true)} onSignOut={onSignOut}/>}
+      {showSidebar&&<Sidebar onClose={()=>setShowSidebar(false)} onDisplay={()=>setShowDisplay(true)} onSignOut={onSignOut} onCheatSheet={()=>setShowCheatSheet(true)}/>}
       {showDisplay&&<DisplayMdl settings={settings} onChange={saveSettings} onClose={()=>setShowDisplay(false)}/>}
+      {showCheatSheet&&<CheatSheetMdl onClose={()=>setShowCheatSheet(false)}/>}
       {showQuickAdd&&<QuickAddModal boardId={board.id} onAdd={t=>{addTask(t);setShowQuickAdd(false);}} onClose={()=>setShowQuickAdd(false)} defaultType={activeTab}/>}
       {editing&&<EditMdl task={editing} onSave={saveTask} onClose={()=>setEditing(null)} onDelete={()=>delTask(editing.id)}/>}
     </div>
