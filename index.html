@@ -41,13 +41,163 @@ const db=supabase.createClient(SURL,SKEY);
 
 /* ── Constants ── */
 const LIME="#CAFF4C";
-const PRIORITIES=[{id:"high",label:"High",color:"#FF453A"},{id:"normal",label:"Normal",color:"#888"},{id:"low",label:"Low",color:"#1d9bf0"}];
 const WDN=["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
 const WDL=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const MONTH_FULL=["january","february","march","april","may","june","july","august","september","october","november","december"];
+const MONTH_SHORT=["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+
+/* ── Food emoji map ── */
+const FOOD_EMOJIS=[
+  ["🍎",["apple","apples","gala","fuji","granny smith"]],
+  ["🍌",["banana","bananas"]],
+  ["🍊",["orange","oranges","clementine","mandarin","tangerine"]],
+  ["🍋",["lemon","lemons","lime","limes"]],
+  ["🍇",["grape","grapes"]],
+  ["🍓",["strawberr","raspberry","raspberries"]],
+  ["🫐",["blueberr"]],
+  ["🍉",["watermelon"]],
+  ["🍑",["peach","peaches","nectarine"]],
+  ["🍐",["pear","pears"]],
+  ["🍒",["cherr"]],
+  ["🥭",["mango","mangoes"]],
+  ["🍍",["pineapple"]],
+  ["🥥",["coconut"]],
+  ["🍈",["melon","cantaloupe","honeydew"]],
+  ["🥝",["kiwi"]],
+  ["🥑",["avocado"]],
+  ["🍅",["tomato","tomatoes"]],
+  ["🥕",["carrot","carrots"]],
+  ["🥦",["broccoli","broccolini"]],
+  ["🥬",["lettuce","spinach","arugula","kale","chard","cabbage","bok choy","greens","salad mix","romaine","endive"]],
+  ["🥒",["cucumber"]],
+  ["🫑",["bell pepper","green pepper","red pepper","yellow pepper"]],
+  ["🌶",["jalapeño","chili pepper","poblano","habanero","serrano"]],
+  ["🌽",["corn","sweet corn"]],
+  ["🧅",["onion","shallot","scallion","green onion","leek","chive"]],
+  ["🧄",["garlic"]],
+  ["🥔",["potato","sweet potato","yam","russet"]],
+  ["🍠",["yam"]],
+  ["🍄",["mushroom","shiitake","portobello","cremini"]],
+  ["🫘",["bean","beans","lentil","chickpea","edamame","black bean","kidney bean","pinto"]],
+  ["🥜",["peanut","almond","cashew","walnut","pecan","pistachio","macadamia","hazelnut","nut","nuts","mixed nuts"]],
+  ["🌿",["herb","herbs","basil","cilantro","parsley","mint","rosemary","thyme","dill","oregano","sage","tarragon"]],
+  ["🫚",["ginger","turmeric","beet","turnip","radish","parsnip","celery root"]],
+  ["🥚",["egg","eggs","hard boiled","deviled"]],
+  ["🥛",["milk","whole milk","skim milk","2% milk","oat milk","almond milk","soy milk","coconut milk","lactose"]],
+  ["🧀",["cheese","cheddar","mozzarella","parmesan","brie","gouda","feta","ricotta","provolone","swiss","gruyere","colby","pepper jack"]],
+  ["🧈",["butter","margarine","ghee","lard","shortening"]],
+  ["🫙",["yogurt","yoghurt","kefir","sour cream","cream cheese","cottage cheese","quark","crème fraîche"]],
+  ["🍗",["chicken","poultry","wings","drumstick","thigh","breast","rotisserie","hen","duck","game hen"]],
+  ["🥩",["beef","steak","ground beef","brisket","lamb","veal","roast","rib","sirloin","tenderloin","flank","skirt","chuck"]],
+  ["🥓",["bacon","pork","ham","prosciutto","sausage","chorizo","salami","pepperoni","pancetta","bratwurst","kielbasa","hot dog","wiener","lunch meat","deli meat","bologna"]],
+  ["🐟",["fish","salmon","tuna","tilapia","cod","halibut","trout","sardine","anchovy","mahi","flounder","bass","snapper","catfish","herring","mackerel","sole"]],
+  ["🦐",["shrimp","prawn","lobster","crab","scallop","clam","mussel","oyster","squid","octopus","seafood","imitation crab"]],
+  ["🦃",["turkey","ground turkey"]],
+  ["🍞",["bread","sourdough","baguette","loaf","pita","naan","roll","bun","brioche","rye","pumpernickel","ciabatta","focaccia","challah"]],
+  ["🥐",["croissant","pastry","danish","strudel"]],
+  ["🫓",["tortilla","flatbread","lavash","pita bread","naan bread"]],
+  ["🍝",["pasta","spaghetti","penne","fettuccine","lasagna","noodle","linguine","rigatoni","fusilli","farfalle","orzo","ramen","udon","soba","lo mein","pad thai noodle"]],
+  ["🍚",["rice","jasmine rice","brown rice","basmati","arborio","wild rice","quinoa","couscous","barley","farro","bulgur","millet","polenta","grits"]],
+  ["🥣",["cereal","oatmeal","granola","muesli","oat","oats","porridge","cream of wheat"]],
+  ["🌾",["flour","wheat","cornmeal","breadcrumb","panko","semolina","almond flour","coconut flour"]],
+  ["🍯",["honey","syrup","maple syrup","agave","molasses","golden syrup","corn syrup"]],
+  ["🧂",["salt","sea salt","kosher salt","spice","seasoning","rub","cumin","paprika","cinnamon","nutmeg","turmeric","curry","chili powder","garlic powder","onion powder","pepper flakes"]],
+  ["🫒",["olive","olives","olive oil","tapenade"]],
+  ["🍶",["soy sauce","fish sauce","oyster sauce","worcestershire","teriyaki","hoisin","miso","tamari","coconut aminos","liquid smoke","hot sauce","sriracha","tabasco","vinegar","balsamic","apple cider vinegar","white vinegar","rice vinegar"]],
+  ["🧴",["oil","vegetable oil","canola oil","sunflower oil","avocado oil","sesame oil","coconut oil","cooking spray","pam"]],
+  ["🫙",["jam","jelly","preserve","marmalade","pickle","pickles","relish","salsa","chutney","pesto","hummus","tahini","aioli","tzatziki","tapenade","bruschetta","spread","capers","kimchi","sauerkraut","hot sauce"]],
+  ["🍅",["tomato paste","tomato sauce","marinara","crushed tomato","diced tomato","sun dried tomato"]],
+  ["🧃",["juice","apple juice","orange juice","grape juice","cranberry juice","lemonade","limeade","cider","nectar","fruit punch","v8","carrot juice"]],
+  ["☕",["coffee","espresso","cold brew","instant coffee","coffee beans","coffee grounds","ground coffee"]],
+  ["🍵",["tea","green tea","herbal tea","chai","matcha","chamomile","mint tea","black tea","oolong","white tea","kombucha"]],
+  ["🍺",["beer","ale","lager","ipa","stout","pilsner","hard seltzer","cider"]],
+  ["🍷",["wine","red wine","white wine","rosé","champagne","prosecco","sparkling wine"]],
+  ["🥤",["soda","cola","pepsi","coke","sparkling water","club soda","tonic water","sports drink","gatorade","powerade","energy drink","red bull","monster","smoothie","protein shake","almond milk","oat milk latte"]],
+  ["💧",["water","filtered water","mineral water","distilled water","spring water"]],
+  ["🍱",["leftover","leftovers","meal prep","prepped meals"]],
+  ["🍲",["soup","stew","chili","broth","stock","chicken broth","beef broth","vegetable broth","chowder","bisque","ramen broth","bone broth","consommé","gazpacho"]],
+  ["🥗",["coleslaw","potato salad","pasta salad","fruit salad","tossed salad","caesar salad","greek salad","waldorf"]],
+  ["🥪",["sandwich","sub","hoagie","po boy","wrap","panini","gyro","shawarma"]],
+  ["🍕",["pizza","pizza rolls","flatbread pizza"]],
+  ["🍔",["burger","hamburger","veggie burger","turkey burger","black bean burger"]],
+  ["🌮",["taco","burrito","quesadilla","enchilada","fajita","nachos","chimichanga"]],
+  ["🍣",["sushi","sashimi","maki","nigiri","poke","tempura"]],
+  ["🥘",["stir fry","fried rice","curry","tikka masala","pad thai","bibimbap","shakshuka","casserole","lasagna","moussaka"]],
+  ["🍫",["chocolate","cocoa","nutella","cacao nibs","hot chocolate","dark chocolate","milk chocolate","white chocolate","chocolate chips"]],
+  ["🍪",["cookie","cookies","biscuit","oreo","chips ahoy","shortbread","snickerdoodle","macaroon"]],
+  ["🎂",["cake","cheesecake","layer cake","pound cake","angel food","carrot cake","red velvet"]],
+  ["🧁",["muffin","cupcake","scone","brownie","blondie","lemon bar"]],
+  ["🍩",["donut","doughnut","cruller","fritter"]],
+  ["🥧",["pie","tart","quiche","cobbler","crisp","crumble"]],
+  ["🍿",["popcorn","kettle corn"]],
+  ["🥨",["pretzel","chip","chips","potato chips","tortilla chips","doritos","lays","pringles","cracker","crackers","graham cracker","rice cake","corn chip","pita chip"]],
+  ["🍦",["ice cream","gelato","sorbet","frozen yogurt","popsicle","ice pop","fudgesicle","creamsicle","sherbet","nice cream"]],
+  ["❄️",["frozen","freeze","frost"]],
+];
+
+const getFoodEmoji=(title)=>{
+  if(!title)return null;
+  const lower=title.toLowerCase();
+  for(const[emoji,keys]of FOOD_EMOJIS){
+    if(keys.some(k=>lower.includes(k)))return emoji;
+  }
+  return null;
+};
+
+/* ── Storage & category classification ── */
+const FREEZER_KEYS=["frozen","freeze","frost","ice cream","gelato","sorbet","popsicle","ice pop","fudgesicle","creamsicle","sherbet","nice cream","frozen yogurt","frozen meal","frozen pizza","frozen burrito","frozen waffle","edamame","ice","freezer"];
+const PANTRY_KEYS=["pasta","spaghetti","noodle","rice","flour","cereal","oat","oatmeal","granola","chip","chips","cracker","crackers","pretzel","popcorn","bread","baguette","loaf","pita","naan","tortilla","flatbread","canned","can of","jar","sauce","tomato paste","marinara","olive oil","oil","vinegar","soy sauce","fish sauce","hot sauce","sriracha","tabasco","ketchup","mustard","mayo","mayonnaise","salsa","jam","jelly","honey","syrup","maple syrup","sugar","brown sugar","salt","pepper","spice","seasoning","coffee","coffee grounds","coffee beans","tea","chocolate","cocoa","nutella","candy","cookie","crackers","nut","nuts","peanut","almond","cashew","walnut","dried","beans","lentil","chickpea","quinoa","couscous","barley","farro","cornmeal","breadcrumb","soup can","stock","broth","coconut milk","evaporated milk","condensed milk","baking","vanilla","powder","mix","box","bag of","pouch","packet","instant","shelf stable"];
+const FRIDGE_DEFAULTS=["egg","eggs","milk","cheese","butter","yogurt","sour cream","cream cheese","cream","leftover","leftovers","deli","produce","chicken","beef","pork","fish","salmon","tuna","shrimp","turkey","lettuce","spinach","kale","arugula","greens","broccoli","carrot","celery","mushroom","strawberr","blueberr","berry","apple","grape","tomato","cucumber","pepper","avocado","lemon","lime","orange","meat","seafood","fresh","raw","rotisserie","cooked","soup","stew","chili"];
+
+const getStorage=(title)=>{
+  const lower=title.toLowerCase();
+  if(FREEZER_KEYS.some(k=>lower.includes(k)))return"freezer";
+  if(PANTRY_KEYS.some(k=>lower.includes(k)))return"pantry";
+  // Check if it's a clearly fridge item
+  if(FRIDGE_DEFAULTS.some(k=>lower.includes(k)))return"fridge";
+  // Default: fridge (fresh items are more common to track)
+  return"fridge";
+};
+
+const CATEGORIES=[
+  {id:"produce",label:"Produce",icon:"🥬",keys:["apple","banana","orange","lemon","lime","grape","strawberr","blueberr","watermelon","peach","pear","cherr","mango","pineapple","coconut","melon","kiwi","avocado","tomato","carrot","broccoli","lettuce","spinach","kale","arugula","cabbage","cucumber","pepper","corn","onion","garlic","potato","mushroom","celery","beet","zucchini","squash","cauliflower","asparagus","artichoke","radish","turnip","parsnip","fennel","herb","ginger","fresh","produce","vegetable","fruit","berry","berries","romaine","endive","chard","bok choy","greens","scallion","leek","shallot","edamame","bean sprout","sprout"]},
+  {id:"dairy",label:"Dairy & Eggs",icon:"🥛",keys:["milk","egg","eggs","cheese","butter","yogurt","yoghurt","kefir","sour cream","cream cheese","cottage cheese","cream","ghee","margarine","whey","curd","quark","custard","creamer","half and half","heavy cream","whipping cream","buttermilk"]},
+  {id:"meat",label:"Meat & Fish",icon:"🥩",keys:["chicken","beef","steak","pork","bacon","ham","turkey","lamb","veal","duck","fish","salmon","tuna","tilapia","cod","halibut","trout","sardine","shrimp","prawn","lobster","crab","scallop","clam","mussel","oyster","seafood","sausage","chorizo","salami","pepperoni","prosciutto","deli","lunch meat","ground","rotisserie","hot dog","bratwurst","kielbasa","brisket","ribs","chops","cutlet"]},
+  {id:"grains",label:"Grains & Bread",icon:"🍞",keys:["bread","sourdough","baguette","tortilla","pita","naan","roll","bun","pasta","spaghetti","noodle","rice","quinoa","couscous","barley","cereal","oat","oatmeal","granola","flour","cornmeal","polenta","grits","farro","millet","bulgur","ramen","bagel","english muffin","crouton"]},
+  {id:"frozen",label:"Frozen",icon:"❄️",keys:["frozen","ice cream","gelato","sorbet","popsicle","fudgesicle","creamsicle","sherbet","nice cream","freeze","frost"]},
+  {id:"beverages",label:"Beverages",icon:"🧃",keys:["juice","milk","oat milk","almond milk","soy milk","coffee","tea","beer","wine","soda","cola","sparkling","kombucha","smoothie","drink","lemonade","cider","water","gatorade","powerade","energy drink","protein shake","cold brew","espresso","matcha","chai","champagne","prosecco","v8"]},
+  {id:"condiments",label:"Condiments & Sauces",icon:"🫙",keys:["sauce","ketchup","mustard","mayo","mayonnaise","dressing","oil","vinegar","soy sauce","hot sauce","sriracha","salsa","jam","jelly","honey","syrup","pesto","hummus","pickle","relish","tahini","aioli","tzatziki","miso","hoisin","teriyaki","oyster sauce","fish sauce","worcestershire","capers","kimchi","sauerkraut","chutney","tapenade","spread","bruschetta","tomato paste","marinara"]},
+  {id:"snacks",label:"Snacks & Sweets",icon:"🍫",keys:["chocolate","candy","cookie","cake","cupcake","muffin","brownie","chip","chips","cracker","pretzel","popcorn","granola bar","protein bar","energy bar","trail mix","nut","nuts","nut butter","peanut butter","almond butter","jelly bean","gummy","lollipop","licorice","marshmallow","donut","doughnut","pie","tart","ice cream"]},
+  {id:"other",label:"Other",icon:"📦",keys:[]},
+];
+
+const getCategory=(title)=>{
+  const lower=title.toLowerCase();
+  for(const cat of CATEGORIES.slice(0,-1)){
+    if(cat.keys.some(k=>lower.includes(k)))return cat.id;
+  }
+  return"other";
+};
+
+/* ── Month auto-date ── */
+const extractMonthDate=(title)=>{
+  if(!title)return null;
+  const words=title.toLowerCase().replace(/[^a-z\s]/g," ").split(/\s+/).filter(Boolean);
+  for(let i=0;i<MONTH_FULL.length;i++){
+    if(words.includes(MONTH_FULL[i])||words.includes(MONTH_SHORT[i])){
+      const today=new Date(todayStr()+"T00:00:00");
+      let year=today.getFullYear();
+      let candidate=new Date(year,i,1);
+      if(candidate<today){year++;candidate=new Date(year,i,1);}
+      return`${year}-${String(i+1).padStart(2,"0")}-01`;
+    }
+  }
+  return null;
+};
 
 /* ── Time helpers ── */
 const etNow=()=>{const now=new Date();return new Date(now.toLocaleString("en-US",{timeZone:"America/New_York"}));};
-const todayStr=()=>{const d=etNow();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;};
+const todayStr=()=>{const d=etNow();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;};
 const genId=()=>crypto.randomUUID();
 const daysDiff=s=>{if(!s)return null;const a=new Date(todayStr()+"T00:00:00"),b=new Date(s+"T00:00:00");return Math.round((b-a)/86400000);};
 
@@ -121,7 +271,7 @@ function Logo({size=24}){
   );
 }
 
-/* ── Modal ── (top=true pins it to top so keyboard doesn't push it off screen) */
+/* ── Modal ── */
 function Modal({onClose,children,maxWidth=490,top=false}){
   const{cardBg,border}=useTheme();
   return(
@@ -156,7 +306,7 @@ const FRIDGE_GUIDE=[
 ];
 
 function CheatSheetMdl({onClose}){
-  const{border,text,muted,lm}=useTheme();
+  const{border,text,muted}=useTheme();
   return(
     <Modal onClose={onClose} maxWidth={360}>
       <div style={{padding:"16px 18px 0"}}>
@@ -174,14 +324,10 @@ function CheatSheetMdl({onClose}){
               <span style={{fontSize:13,fontWeight:600,color:text}}>{item.name}</span>
               {item.note&&<span style={{fontSize:11,color:muted,marginLeft:6,fontStyle:"italic"}}>{item.note}</span>}
             </div>
-            <div style={{flexShrink:0,textAlign:"right"}}>
-              <span style={{fontSize:13,fontWeight:800,color:"#30D158",fontVariantNumeric:"tabular-nums"}}>{item.days}</span>
-            </div>
+            <span style={{fontSize:13,fontWeight:800,color:"#30D158",flexShrink:0}}>{item.days}</span>
           </div>
         ))}
-        <div style={{padding:"12px 0",fontSize:11,color:muted,textAlign:"center",fontStyle:"italic"}}>
-          When in doubt, throw it out 🗑
-        </div>
+        <div style={{padding:"12px 0",fontSize:11,color:muted,textAlign:"center",fontStyle:"italic"}}>When in doubt, throw it out 🗑</div>
       </div>
     </Modal>
   );
@@ -189,7 +335,7 @@ function CheatSheetMdl({onClose}){
 
 /* ── Auth ── */
 function AuthScreen({onAuth}){
-  const [mode,setMode]=useState("login"),[email,setEmail]=useState(""),[pw,setPw]=useState(""),[loading,setLoading]=useState(false),[err,setErr]=useState("");
+  const[mode,setMode]=useState("login"),[email,setEmail]=useState(""),[pw,setPw]=useState(""),[loading,setLoading]=useState(false),[err,setErr]=useState("");
   const submit=async()=>{
     if(!email||!pw)return setErr("Email and password required");
     setLoading(true);setErr("");
@@ -227,10 +373,10 @@ function AuthScreen({onAuth}){
   );
 }
 
-/* ── Notes field ── */
+/* ── NotesField ── */
 function NotesField({notes,readOnly,onChange}){
   const{border,inp,text,muted}=useTheme();
-  const [expanded,setExpanded]=useState(false);
+  const[expanded,setExpanded]=useState(false);
   const taRef=useRef();
   useEffect(()=>{if(expanded&&taRef.current)taRef.current.focus();},[expanded]);
   if(expanded&&!readOnly){
@@ -256,9 +402,18 @@ function NotesField({notes,readOnly,onChange}){
 
 /* ── EditMdl ── */
 function EditMdl({task,onSave,onClose,onDelete}){
-  const{border,text,muted,inp,cardBg,lm}=useTheme();
+  const{border,text,muted,inp,lm}=useTheme();
   const[f,setF]=useState({...task});
+  const[monthHint,setMonthHint]=useState(null);
   const set=(k,v)=>setF(x=>({...x,[k]:v}));
+
+  const handleTitleChange=(v)=>{
+    set("title",v);
+    const md=extractMonthDate(v);
+    if(md){set("dueDate",md);setMonthHint(md);}
+    else setMonthHint(null);
+  };
+
   const fp=parseFreq(f.frequency);
   const inp2={width:"100%",padding:"9px 11px",borderRadius:8,border:`1px solid ${border}`,fontSize:13,fontFamily:"inherit",color:text,background:inp,marginBottom:12,boxSizing:"border-box",outline:"none"};
   const lbl={display:"block",fontSize:10,fontWeight:600,color:muted,letterSpacing:1.2,textTransform:"uppercase",marginBottom:5};
@@ -273,11 +428,12 @@ function EditMdl({task,onSave,onClose,onDelete}){
     <Modal onClose={onClose} maxWidth={520}>
       <div style={{padding:"16px 16px 0"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-          <input value={f.title} onChange={e=>set("title",e.target.value)}
+          <input value={f.title} onChange={e=>handleTitleChange(e.target.value)}
             style={{flex:1,fontSize:18,fontWeight:800,color:text,background:"transparent",border:"none",borderBottom:`1px solid ${border}`,outline:"none",fontFamily:"inherit",lineHeight:1.3,marginBottom:0,padding:"0 0 4px",boxSizing:"border-box",marginRight:12}}
             placeholder={isFood?"Item name…":"Task title…"} onFocus={FL} onBlur={FB}/>
           <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:muted,flexShrink:0}}>✕</button>
         </div>
+        {monthHint&&<div style={{fontSize:11,color:"#4ECDC4",marginBottom:8,padding:"5px 10px",background:lm?"#e8fdf8":"#0a1e1a",borderRadius:6}}>📅 Date set to {monthHint} from title</div>}
         <div style={{marginBottom:12}}>
           <label style={lbl}>Type</label>
           <div style={{display:"flex",gap:8}}>
@@ -311,7 +467,7 @@ function EditMdl({task,onSave,onClose,onDelete}){
         </div>
         <div style={{display:"flex",gap:8,marginBottom:14}}>
           <button onClick={markDone}
-            style={{flex:1,padding:"11px",borderRadius:9,border:`1px solid #30D15855`,background:lm?"#d8f5e0":"#0a140a",color:lm?"#1a7a3a":"#30D158",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"inherit"}}>
+            style={{flex:1,padding:"11px",borderRadius:9,border:"1px solid #30D15855",background:lm?"#d8f5e0":"#0a140a",color:lm?"#1a7a3a":"#30D158",cursor:"pointer",fontSize:13,fontWeight:700,fontFamily:"inherit"}}>
             {isFood?"✓ Used It":"✓ Done"}
             {fp.type&&<span style={{fontSize:11,fontWeight:400,opacity:.7}}> → resets</span>}
           </button>
@@ -337,22 +493,30 @@ function EditMdl({task,onSave,onClose,onDelete}){
   );
 }
 
-/* ── Quick Add Modal (pinned to top so keyboard doesn't cover it) ── */
+/* ── Quick Add Modal (pinned to top) ── */
 function QuickAddModal({boardId,onAdd,onClose,defaultType}){
   const{border,text,muted,inp,lm}=useTheme();
   const[title,setTitle]=useState("");
   const[date,setDate]=useState(todayStr());
-  const[masterType,setMasterType]=useState(defaultType||"");
+  const[masterType,setMasterType]=useState(defaultType==="INVENTORY"?"FOOD":defaultType||"");
+  const[monthHint,setMonthHint]=useState(null);
   const isFood=masterType==="FOOD";
+
+  const handleTitleChange=(v)=>{
+    setTitle(v);
+    const md=extractMonthDate(v);
+    if(md){setDate(md);setMonthHint(md);}
+    else setMonthHint(null);
+  };
+
   const inp2={padding:"6px 10px",borderRadius:7,border:`1px solid ${border}`,background:inp,color:text,fontSize:13,fontFamily:"inherit",outline:"none",width:"100%"};
   const submit=()=>{
     if(!title.trim())return;
     const t=mkTask(boardId,masterType);
     t.title=title.trim();
-    t.dueDate=date||todayStr();
+    t.dueDate=extractMonthDate(title.trim())||date||todayStr();
     onAdd(t);
-    setTitle("");
-    setDate(todayStr());
+    setTitle("");setDate(todayStr());setMonthHint(null);
   };
   const MT=[{id:"FOOD",icon:"🍽",accent:"#FF9F0A"},{id:"HOUSE",icon:"🏠",accent:"#4EA8DE"}];
   return(
@@ -373,11 +537,12 @@ function QuickAddModal({boardId,onAdd,onClose,defaultType}){
             );
           })}
         </div>
-        <input autoFocus value={title} onChange={e=>setTitle(e.target.value)}
+        <input autoFocus value={title} onChange={e=>handleTitleChange(e.target.value)}
           onKeyDown={e=>{if(e.key==="Enter"&&title.trim())submit();if(e.key==="Escape")onClose();}}
           placeholder={isFood?"What food item?":"What needs to get done?"}
-          style={{width:"100%",background:inp,border:`1px solid ${border}`,borderRadius:9,padding:"11px 14px",color:text,fontSize:15,outline:"none",fontFamily:"inherit",marginBottom:10,boxSizing:"border-box"}}
+          style={{width:"100%",background:inp,border:`1px solid ${border}`,borderRadius:9,padding:"11px 14px",color:text,fontSize:15,outline:"none",fontFamily:"inherit",marginBottom:6,boxSizing:"border-box"}}
           onFocus={FL} onBlur={FB}/>
+        {monthHint&&<div style={{fontSize:11,color:"#4ECDC4",marginBottom:8,padding:"5px 10px",background:lm?"#e8fdf8":"#0a1e1a",borderRadius:6}}>📅 Date set to {monthHint} from title</div>}
         <div style={{marginBottom:4}}>
           <div style={{fontSize:10,color:muted,marginBottom:4,letterSpacing:.5,fontWeight:600,textTransform:"uppercase"}}>{isFood?"Expiry Date":"Due Date"}</div>
           <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={{...inp2,colorScheme:lm?"light":"dark"}}/>
@@ -422,22 +587,33 @@ function DisplayMdl({settings,onChange,onClose}){
 }
 
 /* ── Sidebar ── */
-function Sidebar({onClose,onDisplay,onSignOut,onCheatSheet}){
+function Sidebar({onClose,onDisplay,onSignOut,onCheatSheet,onRetroDate}){
   const{border,text,lm}=useTheme();
   const bg=lm?"#ccdff0":"#0a0a0a";
   const hov=lm?"#b8d0e8":"#111";
-  const row=(icon,label,onClick)=>(
+  const[retroMsg,setRetroMsg]=useState(null);
+
+  const row=(icon,label,onClick,extra)=>(
     <button onClick={onClick}
       style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"13px 18px",border:"none",background:"transparent",color:text,fontFamily:"inherit",fontSize:13,cursor:"pointer",textAlign:"left"}}
       onMouseEnter={e=>e.currentTarget.style.background=hov}
       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-      <span style={{fontSize:16,width:20,textAlign:"center"}}>{icon}</span>{label}
+      <span style={{fontSize:16,width:20,textAlign:"center"}}>{icon}</span>
+      <span style={{flex:1}}>{label}</span>
+      {extra}
     </button>
   );
+
+  const handleRetro=async()=>{
+    const count=await onRetroDate();
+    setRetroMsg(count===0?"No dates to update ✓":`Updated ${count} task${count===1?"":"s"} ✓`);
+    setTimeout(()=>setRetroMsg(null),3000);
+  };
+
   return(
     <>
       <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.4)",zIndex:450}}/>
-      <div style={{position:"fixed",left:0,top:0,bottom:0,width:220,background:bg,zIndex:451,display:"flex",flexDirection:"column",borderRight:`1px solid ${border}`,boxShadow:"4px 0 24px rgba(0,0,0,.15)"}}>
+      <div style={{position:"fixed",left:0,top:0,bottom:0,width:230,background:bg,zIndex:451,display:"flex",flexDirection:"column",borderRight:`1px solid ${border}`,boxShadow:"4px 0 24px rgba(0,0,0,.15)"}}>
         <div style={{padding:"18px 18px 14px",borderBottom:`1px solid ${border}`,display:"flex",alignItems:"center",gap:8}}>
           <Logo size={18}/>
           <div style={{fontWeight:800,fontSize:14,letterSpacing:-.5,color:text}}>MnK</div>
@@ -445,6 +621,15 @@ function Sidebar({onClose,onDisplay,onSignOut,onCheatSheet}){
         <div style={{flex:1,overflowY:"auto",paddingTop:8}}>
           {row("⊙","Display & Theme",()=>{onDisplay();onClose();})}
           {row("📋","Fridge Cheat Sheet",()=>{onCheatSheet();onClose();})}
+          <div style={{margin:"0 0",borderTop:`1px solid ${border}`,paddingTop:4}}>
+            <div style={{padding:"8px 18px 4px",fontSize:10,color:lm?"#668":"#555",letterSpacing:1.2,textTransform:"uppercase",fontWeight:600}}>Utilities</div>
+            {row("🗓","Fix Dates from Titles",handleRetro)}
+            {retroMsg&&(
+              <div style={{margin:"0 12px 8px",padding:"7px 12px",borderRadius:8,background:lm?"#d8f5e0":"#0a1a0a",color:"#30D158",fontSize:12,fontWeight:600}}>
+                {retroMsg}
+              </div>
+            )}
+          </div>
         </div>
         <div style={{borderTop:`1px solid ${border}`,padding:"8px 0"}}>
           {row("⏻","Sign Out",()=>{onSignOut();onClose();})}
@@ -454,17 +639,144 @@ function Sidebar({onClose,onDisplay,onSignOut,onCheatSheet}){
   );
 }
 
-/* ── Main View ── */
-function MainView({tasks,onEdit,onCheck,activeTab,onTabChange,readOnly}){
+/* ── Inventory View ── */
+function InventoryView({tasks,onEdit}){
   const{text,border,cardBg,muted,lm}=useTheme();
   const[search,setSearch]=useState("");
+  const[groupBy,setGroupBy]=useState("storage"); // "storage" | "category"
 
+  const foodItems=tasks.filter(t=>!t.done&&t.masterType==="FOOD");
+  const q=search.trim().toLowerCase();
+  const filtered=foodItems.filter(t=>!q||t.title.toLowerCase().includes(q)||t.notes.toLowerCase().includes(q));
+
+  const byStorage=(loc)=>filtered.filter(t=>getStorage(t.title)===loc).sort((a,b)=>{
+    const da=a.dueDate?daysDiff(a.dueDate):999;
+    const db_=b.dueDate?daysDiff(b.dueDate):999;
+    return da-db_;
+  });
+
+  const fridge=byStorage("fridge");
+  const freezer=byStorage("freezer");
+  const pantry=byStorage("pantry");
+
+  const expiryBadge=(t)=>{
+    if(!t.dueDate)return null;
+    const diff=daysDiff(t.dueDate);
+    if(diff<0)return{text:`${Math.abs(diff)}d ago`,bg:"#FF453A",color:"#fff"};
+    if(diff===0)return{text:"today",bg:"#FF453A",color:"#fff"};
+    if(diff===1)return{text:"tmrw",bg:"#FF9F0A",color:"#000"};
+    if(diff<=7)return{text:`${diff}d`,bg:"#FF9F0A22",color:"#FF9F0A"};
+    if(diff<=12)return{text:`${diff}d`,bg:"#FFD60A22",color:"#B8960A"};
+    return{text:`${diff}d`,bg:lm?"#e8f2fa":"#1a1a1a",color:muted};
+  };
+
+  const InvRow=({t})=>{
+    const emoji=getFoodEmoji(t.title);
+    const badge=expiryBadge(t);
+    const isUrgent=t.dueDate&&daysDiff(t.dueDate)<=1;
+    const isExpired=t.dueDate&&daysDiff(t.dueDate)<0;
+    return(
+      <div onClick={()=>onEdit(t)} style={{display:"flex",alignItems:"center",gap:9,padding:"9px 12px",borderRadius:9,background:isExpired?(lm?"#ffe8e8":"#1a0808"):(isUrgent?(lm?"#fff5e0":"#1a0e00"):cardBg),marginBottom:4,border:`1px solid ${isExpired?"#FF453A33":(isUrgent?"#FF9F0A33":border)}`,cursor:"pointer",transition:"border-color .1s"}}
+        onMouseEnter={e=>e.currentTarget.style.borderColor="#888"}
+        onMouseLeave={e=>e.currentTarget.style.borderColor=isExpired?"#FF453A33":(isUrgent?"#FF9F0A33":border)}>
+        <span style={{fontSize:18,width:24,textAlign:"center",flexShrink:0}}>{emoji||"🥫"}</span>
+        <span style={{flex:1,fontSize:13,fontWeight:500,color:text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title}</span>
+        {badge&&(
+          <span style={{fontSize:11,fontWeight:700,padding:"2px 7px",borderRadius:6,background:badge.bg,color:badge.color,flexShrink:0,whiteSpace:"nowrap"}}>{badge.text}</span>
+        )}
+      </div>
+    );
+  };
+
+  const StorageSection=({icon,label,color,items})=>{
+    if(!items.length)return null;
+    return(
+      <div style={{marginBottom:20}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,padding:"8px 12px",borderRadius:10,background:lm?"#e8f2fa":"#111"}}>
+          <span style={{fontSize:20}}>{icon}</span>
+          <span style={{fontSize:12,fontWeight:800,color,letterSpacing:.8,textTransform:"uppercase"}}>{label}</span>
+          <span style={{fontSize:11,color:muted,marginLeft:2}}>{items.length} item{items.length!==1?"s":""}</span>
+        </div>
+        {items.map(t=><InvRow key={t.id} t={t}/>)}
+      </div>
+    );
+  };
+
+  const total=filtered.length;
+
+  return(
+    <div style={{display:"flex",flexDirection:"column",flex:1,minHeight:0}}>
+      {/* Search */}
+      <div style={{padding:"8px 14px",borderBottom:`1px solid ${border}`,background:lm?"#d6e8f5":"#0a0a0a",flexShrink:0}}>
+        <div style={{position:"relative",maxWidth:600,margin:"0 auto"}}>
+          <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",fontSize:13,color:muted,pointerEvents:"none"}}>🔍</span>
+          <input value={search} onChange={e=>setSearch(e.target.value)}
+            placeholder="Search inventory…"
+            style={{width:"100%",padding:"7px 30px 7px 32px",borderRadius:9,border:`1px solid ${border}`,background:lm?"#e8f2fa":"#1a1a1a",color:text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}
+            onFocus={FL} onBlur={FB}/>
+          {search&&<button onClick={()=>setSearch("")} style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",fontSize:14,color:muted,lineHeight:1,padding:2}}>✕</button>}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{flex:1,overflowY:"auto",padding:"14px 14px 100px"}}>
+        <div style={{maxWidth:600,margin:"0 auto"}}>
+          {total===0?(
+            <div style={{textAlign:"center",padding:"60px 0",color:muted}}>
+              <div style={{fontSize:44,marginBottom:14}}>{q?"🔍":"📦"}</div>
+              <div style={{fontWeight:700,fontSize:15,color:lm?"#446688":"#aaa",marginBottom:6}}>
+                {q?`No results for "${search}"`:"Inventory is empty"}
+              </div>
+              {!q&&<div style={{fontSize:12,opacity:.7}}>Add food items in the FOOD tab</div>}
+            </div>
+          ):(
+            <>
+              <StorageSection icon="🧊" label="Fridge" color={lm?"#2a7a9a":"#4EA8DE"} items={fridge}/>
+              <StorageSection icon="❄️" label="Freezer" color={lm?"#446688":"#7AB8E0"} items={freezer}/>
+              <StorageSection icon="🏠" label="Pantry" color={lm?"#6a5a2a":"#C8A83A"} items={pantry}/>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Tab Bar ── */
+function TabBar({activeTab,onTabChange,tasks,lm,border,muted}){
   const TABS=[
     {id:"FOOD",icon:"🍽",label:"FOOD",accent:"#FF9F0A",accentBg:lm?"#fff8ec":"#1a1200"},
     {id:"HOUSE",icon:"🏠",label:"HOUSE",accent:"#4EA8DE",accentBg:lm?"#e8f4ff":"#0a1a2a"},
+    {id:"INVENTORY",icon:"📦",label:"STOCK",accent:"#30D158",accentBg:lm?"#e0f5e9":"#0a1a0a"},
   ];
-  const tab=TABS.find(t=>t.id===activeTab)||TABS[0];
+  return(
+    <div style={{display:"flex",background:lm?"#ccdff0":"#000",borderTop:`1px solid ${border}`,paddingBottom:"env(safe-area-inset-bottom,0px)",flexShrink:0}}>
+      {TABS.map(t=>{
+        const isActive=activeTab===t.id;
+        const cnt=t.id==="INVENTORY"?tasks.filter(x=>!x.done&&x.masterType==="FOOD").length:tasks.filter(x=>!x.done&&x.masterType===t.id).length;
+        return(
+          <button key={t.id} onClick={()=>onTabChange(t.id)}
+            style={{flex:1,padding:"13px 8px 11px",border:"none",background:isActive?t.accentBg:"transparent",cursor:"pointer",fontFamily:"inherit",display:"flex",flexDirection:"column",alignItems:"center",gap:3,transition:"background .15s",borderTop:isActive?`2px solid ${t.accent}`:"2px solid transparent"}}>
+            <span style={{fontSize:20,lineHeight:1}}>{t.icon}</span>
+            <span style={{fontSize:10,fontWeight:isActive?800:500,color:isActive?t.accent:muted,letterSpacing:.5}}>{t.label}</span>
+            {cnt>0&&<span style={{fontSize:10,color:isActive?t.accent:muted,opacity:.8}}>{cnt}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Main View (FOOD + HOUSE) ── */
+function MainView({tasks,onEdit,onCheck,activeTab,readOnly}){
+  const{text,border,cardBg,muted,lm}=useTheme();
+  const[search,setSearch]=useState("");
+
+  const FOOD_ACCENT="#FF9F0A";
+  const HOUSE_ACCENT="#4EA8DE";
   const isFood=activeTab==="FOOD";
+  const accent=isFood?FOOD_ACCENT:HOUSE_ACCENT;
+  const accentBg=isFood?(lm?"#fff8ec":"#1a1200"):(lm?"#e8f4ff":"#0a1a2a");
 
   const q=search.trim().toLowerCase();
   const tabItems=[...tasks.filter(t=>!t.done&&t.masterType===activeTab&&(!q||t.title.toLowerCase().includes(q)||t.notes.toLowerCase().includes(q)))]
@@ -480,9 +792,9 @@ function MainView({tasks,onEdit,onCheck,activeTab,onTabChange,readOnly}){
   const today=withDate.filter(t=>daysDiff(t.dueDate)===0);
   const soon=withDate.filter(t=>daysDiff(t.dueDate)>=1&&daysDiff(t.dueDate)<=3);
   const later=withDate.filter(t=>daysDiff(t.dueDate)>3);
-  // FOOD-specific buckets
-  const foodThisWeek=withDate.filter(t=>daysDiff(t.dueDate)>=0&&daysDiff(t.dueDate)<=7);
-  const foodSoon=withDate.filter(t=>daysDiff(t.dueDate)>=8&&daysDiff(t.dueDate)<=12);
+  // FOOD-specific buckets (0–7 = this week, 8–12 = expiring soon, >12 = good)
+  const foodThisWeek=withDate.filter(t=>{const d=daysDiff(t.dueDate);return d>=0&&d<=7;});
+  const foodSoon=withDate.filter(t=>{const d=daysDiff(t.dueDate);return d>=8&&d<=12;});
   const foodGood=withDate.filter(t=>daysDiff(t.dueDate)>12);
 
   const dateLabel=(dueDate)=>{
@@ -493,7 +805,7 @@ function MainView({tasks,onEdit,onCheck,activeTab,onTabChange,readOnly}){
       if(diff===0)return{text:"Expires today",color:"#FF453A",weight:800};
       if(diff===1)return{text:"Expires tomorrow",color:"#FF9F0A",weight:700};
       if(diff<=7)return{text:`Expires in ${diff}d`,color:"#FF9F0A",weight:600};
-      if(diff<=12)return{text:`Expires in ${diff}d`,color:"#FFD60A",weight:500};
+      if(diff<=12)return{text:`Expires in ${diff}d`,color:lm?"#9a7a00":"#FFD60A",weight:500};
       return{text:`Expires in ${diff}d`,color:lm?"#446688":"#888",weight:400};
     } else {
       if(diff<0)return{text:`${Math.abs(diff)}d overdue`,color:"#FF453A",weight:800};
@@ -509,10 +821,12 @@ function MainView({tasks,onEdit,onCheck,activeTab,onTabChange,readOnly}){
     const isUrgent=t.dueDate&&daysDiff(t.dueDate)<=1;
     const rowBg=isOverdue?(lm?"#ffe8e8":"#1a0808"):(isUrgent&&isFood?(lm?"#fff5e0":"#1a0e00"):cardBg);
     const rowBorder=isOverdue?"#FF453A44":(isUrgent&&isFood?"#FF9F0A44":border);
+    const emoji=isFood?getFoodEmoji(t.title):null;
     return(
       <div style={{display:"flex",alignItems:"center",gap:10,padding:"13px 14px",borderRadius:11,background:rowBg,marginBottom:5,border:`1px solid ${rowBorder}`,transition:"border-color .1s"}}
         onMouseEnter={e=>e.currentTarget.style.borderColor=isOverdue?"#FF453A88":"#888"}
         onMouseLeave={e=>e.currentTarget.style.borderColor=rowBorder}>
+        {emoji&&<span style={{fontSize:18,flexShrink:0,width:22,textAlign:"center"}}>{emoji}</span>}
         <div style={{flex:1,minWidth:0,cursor:"pointer"}} onClick={()=>onEdit(t)}>
           <div style={{fontSize:14,fontWeight:600,color:text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title||<span style={{color:muted,fontStyle:"italic"}}>Untitled</span>}</div>
           {t.notes&&<div style={{fontSize:11,color:muted,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginTop:2}}>{t.notes}</div>}
@@ -522,7 +836,7 @@ function MainView({tasks,onEdit,onCheck,activeTab,onTabChange,readOnly}){
         </div>
         {!readOnly&&(
           <button onClick={()=>onCheck(t.id)}
-            style={{width:34,height:34,borderRadius:8,border:`1px solid ${tab.accent}44`,background:lm?tab.accentBg:"transparent",color:tab.accent,fontWeight:800,fontSize:14,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}
+            style={{width:34,height:34,borderRadius:8,border:`1px solid ${accent}44`,background:lm?accentBg:"transparent",color:accent,fontWeight:800,fontSize:14,cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}
             title={isFood?"Mark as used":"Mark done"}>
             ✓
           </button>
@@ -547,43 +861,36 @@ function MainView({tasks,onEdit,onCheck,activeTab,onTabChange,readOnly}){
   };
 
   return(
-    <div style={{display:"flex",flexDirection:"column",flex:1,minHeight:0,position:"relative"}}>
-
+    <div style={{display:"flex",flexDirection:"column",flex:1,minHeight:0}}>
       {/* Search bar */}
       <div style={{padding:"8px 14px",borderBottom:`1px solid ${border}`,background:lm?"#d6e8f5":"#0a0a0a",flexShrink:0}}>
         <div style={{position:"relative",maxWidth:600,margin:"0 auto"}}>
-          <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",fontSize:14,color:muted,pointerEvents:"none"}}>🔍</span>
-          <input
-            value={search}
-            onChange={e=>setSearch(e.target.value)}
+          <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",fontSize:13,color:muted,pointerEvents:"none"}}>🔍</span>
+          <input value={search} onChange={e=>setSearch(e.target.value)}
             placeholder={isFood?"Search food items…":"Search tasks…"}
             style={{width:"100%",padding:"7px 30px 7px 32px",borderRadius:9,border:`1px solid ${border}`,background:lm?"#e8f2fa":"#1a1a1a",color:text,fontSize:14,fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}
-            onFocus={FL} onBlur={FB}
-          />
-          {search&&(
-            <button onClick={()=>setSearch("")} style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",fontSize:14,color:muted,lineHeight:1,padding:2}}>✕</button>
-          )}
+            onFocus={FL} onBlur={FB}/>
+          {search&&<button onClick={()=>setSearch("")} style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",fontSize:14,color:muted,lineHeight:1,padding:2}}>✕</button>}
         </div>
       </div>
 
       {/* Scrollable content */}
-      <div style={{flex:1,overflowY:"auto",padding:"14px 16px 100px"}}>
+      <div style={{flex:1,overflowY:"auto",padding:"14px 16px 16px"}}>
         <div style={{maxWidth:600,margin:"0 auto"}}>
           {tabItems.length===0&&(
             <div style={{textAlign:"center",padding:"64px 0",color:muted}}>
-              <div style={{fontSize:44,marginBottom:14}}>{q?"🔍":tab.icon}</div>
+              <div style={{fontSize:44,marginBottom:14}}>{q?"🔍":(isFood?"🍽":"🏠")}</div>
               <div style={{fontWeight:700,fontSize:15,color:lm?"#446688":"#aaa",marginBottom:6}}>
                 {q?`No results for "${search}"`:(isFood?"No food items yet":"No tasks yet")}
               </div>
               {!q&&<div style={{fontSize:12,opacity:.7}}>Tap <strong>+</strong> to add {isFood?"something expiring soon":"a task"}</div>}
             </div>
           )}
-
           {isFood?(
             <>
               <Sec label="Expired" color="#FF453A" items={overdue}/>
-              <Sec label="Expiring This Week" color="#FF9F0A" sublabel="within 7 days" items={foodThisWeek}/>
-              <Sec label="Expiring Soon" color="#FFD60A" sublabel="8–12 days" items={foodSoon}/>
+              <Sec label="Expiring This Week" color="#FF9F0A" sublabel="≤7 days" items={foodThisWeek}/>
+              <Sec label="Expiring Soon" color={lm?"#9a7a00":"#FFD60A"} sublabel="8–12 days" items={foodSoon}/>
               <Sec label="Still Good" color="#30D158" items={foodGood}/>
               {noDate.length>0&&<Sec label="No Date" color={muted} items={noDate}/>}
             </>
@@ -597,22 +904,6 @@ function MainView({tasks,onEdit,onCheck,activeTab,onTabChange,readOnly}){
             </>
           )}
         </div>
-      </div>
-
-      {/* Bottom tab bar */}
-      <div style={{position:"absolute",bottom:0,left:0,right:0,display:"flex",background:lm?"#ccdff0":"#000",borderTop:`1px solid ${border}`,zIndex:10,paddingBottom:"env(safe-area-inset-bottom,0px)"}}>
-        {TABS.map(t=>{
-          const isActive=activeTab===t.id;
-          const cnt=tasks.filter(x=>!x.done&&x.masterType===t.id).length;
-          return(
-            <button key={t.id} onClick={()=>{onTabChange(t.id);setSearch("");}}
-              style={{flex:1,padding:"13px 8px 11px",border:"none",background:isActive?t.accentBg:"transparent",cursor:"pointer",fontFamily:"inherit",display:"flex",flexDirection:"column",alignItems:"center",gap:3,transition:"background .15s",borderTop:isActive?`2px solid ${t.accent}`:"2px solid transparent"}}>
-              <span style={{fontSize:22,lineHeight:1}}>{t.icon}</span>
-              <span style={{fontSize:11,fontWeight:isActive?800:500,color:isActive?t.accent:muted,letterSpacing:.5}}>{t.label}</span>
-              {cnt>0&&<span style={{fontSize:10,color:isActive?t.accent:muted,opacity:.8}}>{cnt}</span>}
-            </button>
-          );
-        })}
       </div>
     </div>
   );
@@ -637,7 +928,6 @@ function MainApp({user,board,onSignOut}){
   const[settings,setSettings]=useState({lightMode:true});
   const dispKey=`mnk_disp_${user.id}_${board.id}`;
 
-  /* Load settings */
   useEffect(()=>{
     try{const s=JSON.parse(localStorage.getItem(dispKey)||"{}");if(Object.keys(s).length)setSettings(s);}catch{}
     db.from("board_settings").select("*").eq("board_id",board.id).single().then(({data})=>{
@@ -726,12 +1016,35 @@ function MainApp({user,board,onSignOut}){
     }
   };
 
-  /* Quick add from inline nav input */
+  /* ── Retroactive date fix ── */
+  const handleRetroDate=async()=>{
+    let count=0;
+    const updates=[];
+    for(const t of tasks){
+      const md=extractMonthDate(t.title);
+      if(md&&md!==t.dueDate){
+        updates.push({...t,dueDate:md});
+        count++;
+      }
+    }
+    if(updates.length>0){
+      setSyncing(true);
+      for(const u of updates){
+        await db.from("tasks").upsert(t2db(u,board.id));
+      }
+      setSyncing(false);
+      setTasks(ts=>ts.map(t=>{const u=updates.find(x=>x.id===t.id);return u||t;}));
+    }
+    return count;
+  };
+
+  /* ── Inline quick-add ── */
   const handleQuickAdd=()=>{
     if(!quickTitle.trim())return;
-    const t=mkTask(board.id,activeTab);
+    const type=activeTab==="INVENTORY"?"FOOD":activeTab||"FOOD";
+    const t=mkTask(board.id,type);
     t.title=quickTitle.trim();
-    t.dueDate=todayStr();
+    t.dueDate=extractMonthDate(quickTitle.trim())||todayStr();
     addTask(t);
     setQuickTitle("");
     quickRef.current&&quickRef.current.focus();
@@ -759,38 +1072,28 @@ function MainApp({user,board,onSignOut}){
       {/* Nav bar */}
       <div style={{background:theme.navBg,borderBottom:`1px solid ${theme.border}`,padding:"0 12px",flexShrink:0}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",height:50,gap:8}}>
-
-          {/* Left: menu + logo */}
           <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
             <button onClick={()=>setShowSidebar(true)} style={{background:"none",border:"none",cursor:"pointer",color:theme.muted,fontSize:18,padding:"0 2px",lineHeight:1}}>☰</button>
             <Logo size={20}/>
             <span style={{fontWeight:800,fontSize:15,letterSpacing:-.5,color:theme.text}}>MnK</span>
             {syncing&&<span style={{fontSize:8,color:"#30D158",letterSpacing:1,textTransform:"uppercase"}}>SYNCING</span>}
           </div>
-
-          {/* Right: inline quick-add input + plus button */}
           <div style={{display:"flex",alignItems:"center",gap:6,flex:1,justifyContent:"flex-end",minWidth:0}}>
             <input
               ref={quickRef}
               value={quickTitle}
               onChange={e=>setQuickTitle(e.target.value)}
               onKeyDown={e=>{
-                if(e.key==="Enter"){
-                  if(quickTitle.trim())handleQuickAdd();
-                  else setShowQuickAdd(true);
-                }
+                if(e.key==="Enter"){if(quickTitle.trim())handleQuickAdd();else setShowQuickAdd(true);}
                 if(e.key==="Escape"){setQuickTitle("");e.target.blur();}
               }}
-              placeholder={activeTab==="FOOD"?"Add food…":"Add task…"}
-              style={{flex:1,maxWidth:180,minWidth:0,padding:"7px 10px",borderRadius:8,border:`1px solid ${quickTitle?theme.border+"bb":theme.border}`,background:theme.inp,color:theme.text,fontSize:14,fontFamily:"inherit",outline:"none",transition:"border-color .15s"}}
+              placeholder={activeTab==="HOUSE"?"Add task…":"Add food…"}
+              style={{flex:1,maxWidth:180,minWidth:0,padding:"7px 10px",borderRadius:8,border:`1px solid ${theme.border}`,background:theme.inp,color:theme.text,fontSize:14,fontFamily:"inherit",outline:"none"}}
               onFocus={e=>e.target.style.borderColor="#888"}
               onBlur={e=>e.target.style.borderColor=""}
             />
             <button
-              onClick={()=>{
-                if(quickTitle.trim())handleQuickAdd();
-                else setShowQuickAdd(true);
-              }}
+              onClick={()=>{if(quickTitle.trim())handleQuickAdd();else setShowQuickAdd(true);}}
               style={{width:36,height:36,borderRadius:10,border:"none",background:LIME,color:"#000",fontSize:24,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
               +
             </button>
@@ -798,18 +1101,31 @@ function MainApp({user,board,onSignOut}){
         </div>
       </div>
 
-      {/* Main view */}
-      <MainView
-        tasks={tasks}
-        onEdit={setEditing}
-        onCheck={checkTask}
+      {/* Main content */}
+      {activeTab==="INVENTORY"?(
+        <InventoryView tasks={tasks} onEdit={setEditing}/>
+      ):(
+        <MainView
+          tasks={tasks}
+          onEdit={setEditing}
+          onCheck={checkTask}
+          activeTab={activeTab}
+          readOnly={false}
+        />
+      )}
+
+      {/* Shared tab bar */}
+      <TabBar
         activeTab={activeTab}
-        onTabChange={setActiveTab}
-        readOnly={false}
+        onTabChange={(tab)=>setActiveTab(tab)}
+        tasks={tasks}
+        lm={lm}
+        border={theme.border}
+        muted={theme.muted}
       />
 
       {/* Modals */}
-      {showSidebar&&<Sidebar onClose={()=>setShowSidebar(false)} onDisplay={()=>setShowDisplay(true)} onSignOut={onSignOut} onCheatSheet={()=>setShowCheatSheet(true)}/>}
+      {showSidebar&&<Sidebar onClose={()=>setShowSidebar(false)} onDisplay={()=>setShowDisplay(true)} onSignOut={onSignOut} onCheatSheet={()=>setShowCheatSheet(true)} onRetroDate={handleRetroDate}/>}
       {showDisplay&&<DisplayMdl settings={settings} onChange={saveSettings} onClose={()=>setShowDisplay(false)}/>}
       {showCheatSheet&&<CheatSheetMdl onClose={()=>setShowCheatSheet(false)}/>}
       {showQuickAdd&&<QuickAddModal boardId={board.id} onAdd={t=>{addTask(t);setShowQuickAdd(false);}} onClose={()=>setShowQuickAdd(false)} defaultType={activeTab}/>}
